@@ -6,6 +6,8 @@
   <meta name="theme-color" content="#e0f2fe">
   <title>Morning Information</title>
   <link rel="manifest" href="./manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
+  <link rel="apple-touch-icon" sizes="192x192" href="./icon-192.png">
   <style>
     /* =========================================
        カラー＆質感定義（朝の澄んだ空・半透明ガラス風）
@@ -13,10 +15,10 @@
     :root {
       --bg-sky: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 45%, #fdf2f8 100%);
       
-      --glass-bg: rgba(255, 255, 255, 0.72);
-      --glass-bg-sub: rgba(255, 255, 255, 0.55);
-      --glass-border: rgba(255, 255, 255, 0.85);
-      --glass-shadow: 0 8px 24px -4px rgba(14, 116, 144, 0.07), 0 2px 6px -1px rgba(14, 116, 144, 0.04);
+      --glass-bg: rgba(255, 255, 255, 0.74);
+      --glass-bg-sub: rgba(255, 255, 255, 0.58);
+      --glass-border: rgba(255, 255, 255, 0.88);
+      --glass-shadow: 0 6px 18px -4px rgba(14, 116, 144, 0.07), 0 2px 5px -1px rgba(14, 116, 144, 0.04);
 
       --text-main: #1e293b;
       --text-secondary: #475569;
@@ -38,7 +40,7 @@
     }
 
     /* =========================================
-       ベースレイアウト＆タイポグラフィ
+       ベースレイアウト＆タイポグラフィ（高密度・コンパクト調整）
        ========================================= */
     * {
       box-sizing: border-box;
@@ -51,8 +53,8 @@
       background: var(--bg-sky);
       background-attachment: fixed;
       color: var(--text-main);
-      line-height: 1.6;
-      letter-spacing: 0.02em;
+      line-height: 1.4;
+      letter-spacing: 0.015em;
       -webkit-font-smoothing: antialiased;
       min-height: 100vh;
     }
@@ -64,41 +66,42 @@
     }
 
     .container {
-      max-width: 1080px;
+      max-width: 1120px;
       margin: 0 auto;
-      padding: 24px 18px 40px;
+      padding: 14px 14px 28px;
     }
 
     /* =========================================
-       ヘッダー
+       ヘッダー（コンパクト化）
        ========================================= */
     .app-header {
       display: flex;
       justify-content: space-between;
       align-items: flex-end;
-      margin-bottom: 22px;
-      padding: 0 4px 12px;
+      margin-bottom: 12px;
+      padding: 0 2px 8px;
       border-bottom: 1px solid rgba(2, 132, 199, 0.15);
     }
 
     .header-subtitle {
-      font-size: 0.72rem;
+      font-size: 0.68rem;
       text-transform: uppercase;
       letter-spacing: 0.14em;
       color: var(--accent-sky);
       font-weight: 600;
-      margin-bottom: 2px;
+      margin-bottom: 1px;
     }
 
     .header-date {
-      font-size: 1.45rem;
+      font-size: 1.3rem;
       font-weight: 600;
       color: var(--text-main);
-      letter-spacing: 0.04em;
+      letter-spacing: 0.03em;
+      line-height: 1.2;
     }
 
     .header-date span {
-      font-size: 0.95rem;
+      font-size: 0.88rem;
       font-weight: 500;
       color: var(--accent-pink);
       margin-left: 6px;
@@ -107,22 +110,22 @@
     .header-meta {
       display: flex;
       align-items: center;
-      gap: 8px;
-      font-size: 0.78rem;
+      gap: 6px;
+      font-size: 0.74rem;
       color: var(--text-muted);
     }
 
     .sync-badge {
       display: inline-flex;
       align-items: center;
-      gap: 5px;
-      margin-right: 4px;
+      gap: 4px;
+      margin-right: 2px;
     }
 
     .sync-badge.is-loading::before {
       content: "";
-      width: 7px;
-      height: 7px;
+      width: 6px;
+      height: 6px;
       border-radius: 50%;
       background-color: var(--accent-sky);
       animation: pulse 1.2s infinite ease-in-out;
@@ -136,57 +139,55 @@
     .btn-pill {
       display: inline-flex;
       align-items: center;
-      gap: 5px;
+      gap: 4px;
       background: var(--glass-bg);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
       border: 1px solid var(--glass-border);
       color: var(--accent-sky);
-      padding: 6px 12px;
+      padding: 4px 10px;
       border-radius: 999px;
       cursor: pointer;
-      font-size: 0.78rem;
+      font-size: 0.75rem;
       font-weight: 600;
-      box-shadow: 0 2px 6px rgba(2, 132, 199, 0.06);
+      box-shadow: 0 2px 5px rgba(2, 132, 199, 0.05);
       transition: all 0.2s ease;
     }
 
     .btn-pill:hover {
       background: #ffffff;
-      transform: translateY(-1px);
     }
 
     .btn-pill:disabled {
       opacity: 0.6;
       cursor: not-allowed;
-      transform: none;
     }
 
     .btn-icon-only {
-      padding: 6px 9px;
+      padding: 4px 8px;
       color: var(--text-secondary);
     }
 
     /* 通知バナー */
     .stale-banner {
       display: none;
-      margin-bottom: 14px;
-      padding: 8px 14px;
-      border-radius: 10px;
+      margin-bottom: 10px;
+      padding: 6px 12px;
+      border-radius: 8px;
       background: var(--accent-pink-soft);
       border: 1px solid var(--accent-pink-border);
       color: var(--accent-pink);
-      font-size: 0.8rem;
+      font-size: 0.76rem;
       font-weight: 500;
     }
 
     /* =========================================
-       CSS Grid ダッシュボード構造
+       CSS Grid ダッシュボード構造（隙間を詰めて情報量アップ）
        ========================================= */
     .dashboard-grid {
       display: grid;
       grid-template-columns: repeat(12, 1fr);
-      gap: 18px;
+      gap: 12px;
     }
 
     .card {
@@ -194,8 +195,8 @@
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
       border: 1px solid var(--glass-border);
-      border-radius: 16px;
-      padding: 18px 20px;
+      border-radius: 13px;
+      padding: 12px 15px;
       box-shadow: var(--glass-shadow);
       display: flex;
       flex-direction: column;
@@ -205,24 +206,24 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 14px;
+      margin-bottom: 8px;
       gap: 8px;
     }
 
     .card-title {
-      font-size: 0.82rem;
+      font-size: 0.78rem;
       font-weight: 600;
-      letter-spacing: 0.06em;
+      letter-spacing: 0.05em;
       color: var(--text-secondary);
       display: flex;
       align-items: center;
-      gap: 7px;
+      gap: 6px;
       white-space: nowrap;
     }
 
     .card-title svg {
-      width: 15px;
-      height: 15px;
+      width: 14px;
+      height: 14px;
       stroke: var(--accent-sky);
       stroke-width: 1.8;
       fill: none;
@@ -237,17 +238,20 @@
         grid-column: span 12;
       }
       .container {
-        padding: 16px 14px 32px;
+        padding: 12px 10px 24px;
+      }
+      .dashboard-grid {
+        gap: 10px;
       }
     }
 
     /* =========================================
-       Tier 1：鉄道運行情報 ＆ 天気・洗濯指数
+       Tier 1：鉄道運行情報 ＆ 天気・洗濯指数（スリム化）
        ========================================= */
     .transit-card {
-      padding: 13px 20px;
+      padding: 9px 15px;
       border-left: 4px solid var(--accent-green);
-      background: linear-gradient(90deg, rgba(236, 253, 245, 0.82) 0%, rgba(255, 255, 255, 0.72) 100%);
+      background: linear-gradient(90deg, rgba(236, 253, 245, 0.85) 0%, rgba(255, 255, 255, 0.74) 100%);
     }
 
     .transit-card.is-delayed {
@@ -260,20 +264,20 @@
       flex-wrap: wrap;
       justify-content: space-between;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
     }
 
     .transit-route {
       display: flex;
       align-items: center;
-      gap: 8px;
-      font-size: 0.88rem;
+      gap: 7px;
+      font-size: 0.84rem;
       font-weight: 600;
       color: var(--text-main);
     }
 
     .transit-status {
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       font-weight: 600;
       color: var(--accent-green);
       display: flex;
@@ -282,8 +286,8 @@
     }
 
     .status-dot {
-      width: 7px;
-      height: 7px;
+      width: 6px;
+      height: 6px;
       border-radius: 50%;
       background-color: var(--accent-green);
     }
@@ -300,20 +304,20 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 20px;
+      gap: 12px;
       flex-wrap: wrap;
     }
 
     .weather-main {
       display: flex;
       align-items: center;
-      gap: 16px;
+      gap: 12px;
     }
 
     .weather-icon-wrap {
-      width: 52px;
-      height: 52px;
-      border-radius: 14px;
+      width: 42px;
+      height: 42px;
+      border-radius: 11px;
       background: var(--accent-sky-soft);
       display: flex;
       align-items: center;
@@ -323,109 +327,111 @@
     }
 
     .weather-icon-wrap svg {
-      width: 28px;
-      height: 28px;
+      width: 22px;
+      height: 22px;
       stroke: currentColor;
       stroke-width: 1.6;
       fill: none;
     }
 
     .weather-temp {
-      font-size: 2.15rem;
+      font-size: 1.8rem;
       font-weight: 300;
       color: var(--text-main);
-      line-height: 1.1;
+      line-height: 1.05;
     }
 
     .weather-temp small {
-      font-size: 1rem;
+      font-size: 0.9rem;
       color: var(--text-muted);
       margin-left: 2px;
     }
 
     .weather-detail {
-      font-size: 0.82rem;
+      font-size: 0.78rem;
       color: var(--text-muted);
-      margin-top: 3px;
+      margin-top: 2px;
     }
 
     .weather-notice {
-      font-size: 0.76rem;
+      font-size: 0.72rem;
       color: var(--accent-pink);
-      margin-top: 4px;
+      margin-top: 2px;
       display: none;
     }
 
     .laundry-box {
       background: var(--accent-green-soft);
       border: 1px solid var(--accent-green-border);
-      border-radius: 12px;
-      padding: 11px 16px;
-      min-width: 200px;
+      border-radius: 10px;
+      padding: 8px 13px;
+      min-width: 185px;
       transition: background 0.2s, border-color 0.2s;
     }
 
     .laundry-label {
-      font-size: 0.72rem;
+      font-size: 0.68rem;
       font-weight: 600;
       letter-spacing: 0.05em;
       color: var(--accent-green);
-      margin-bottom: 2px;
+      margin-bottom: 1px;
     }
 
     .laundry-value {
-      font-size: 0.95rem;
+      font-size: 0.88rem;
       font-weight: 600;
       color: var(--text-main);
     }
 
     /* =========================================
-       Tier 2：今日の予定 ＆ タスク
+       Tier 2：今日の予定 ＆ タスク（行間・余白をコンパクトに）
        ========================================= */
     .item-list {
       list-style: none;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 5px;
     }
 
     .item-list li {
-      padding: 9px 12px;
+      padding: 6px 10px;
       background: var(--glass-bg-sub);
-      border: 1px solid rgba(255, 255, 255, 0.7);
-      border-radius: 10px;
-      font-size: 0.88rem;
+      border: 1px solid rgba(255, 255, 255, 0.75);
+      border-radius: 8px;
+      font-size: 0.84rem;
+      line-height: 1.35;
       display: flex;
       align-items: baseline;
-      gap: 12px;
+      gap: 9px;
     }
 
     .empty-msg {
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       color: var(--text-muted);
-      padding: 6px 2px;
+      padding: 3px 2px;
     }
 
     .time-badge {
-      font-size: 0.8rem;
+      font-size: 0.76rem;
       font-weight: 600;
       color: var(--accent-sky);
-      min-width: 44px;
+      min-width: 40px;
     }
 
+    /* ToDo チェックリスト */
     .todo-item {
       cursor: pointer;
       transition: background 0.15s ease;
     }
     .todo-item:hover {
-      background: rgba(255, 255, 255, 0.85);
+      background: rgba(255, 255, 255, 0.88);
     }
     .todo-item input[type="checkbox"] {
       appearance: none;
-      width: 16px;
-      height: 16px;
+      width: 14px;
+      height: 14px;
       border: 1.5px solid var(--accent-sky);
-      border-radius: 4px;
+      border-radius: 3.5px;
       background: #ffffff;
       cursor: pointer;
       position: relative;
@@ -438,12 +444,12 @@
     .todo-item input[type="checkbox"]:checked::after {
       content: "";
       position: absolute;
-      left: 4px;
-      top: 1px;
-      width: 4px;
-      height: 8px;
+      left: 3.5px;
+      top: 0.5px;
+      width: 3.5px;
+      height: 7px;
       border: solid #ffffff;
-      border-width: 0 1.8px 1.8px 0;
+      border-width: 0 1.6px 1.6px 0;
       transform: rotate(45deg);
     }
     .todo-item.completed span {
@@ -457,13 +463,13 @@
     .sento-list {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
+      gap: 6px;
     }
 
     .sento-badge {
-      padding: 6px 14px;
+      padding: 4px 11px;
       border-radius: 999px;
-      font-size: 0.84rem;
+      font-size: 0.8rem;
       font-weight: 600;
       background: var(--accent-pink-soft);
       color: var(--accent-pink);
@@ -471,16 +477,16 @@
     }
 
     .sento-open-msg {
-      font-size: 0.86rem;
+      font-size: 0.82rem;
       color: var(--accent-green);
       font-weight: 500;
-      padding: 6px 0;
+      padding: 3px 0;
     }
 
     .media-station {
-      font-size: 0.74rem;
-      padding: 2px 8px;
-      border-radius: 5px;
+      font-size: 0.7rem;
+      padding: 1px 6px;
+      border-radius: 4px;
       background: var(--accent-sky-soft);
       color: var(--accent-sky);
       font-weight: 600;
@@ -507,9 +513,10 @@
     .news-list a {
       color: var(--text-main);
       text-decoration: none;
-      font-size: 0.88rem;
+      font-size: 0.83rem;
+      line-height: 1.38;
       display: block;
-      padding: 9px 2px;
+      padding: 6px 2px;
       transition: color 0.15s ease;
     }
 
@@ -520,16 +527,16 @@
     .anniversary-tags {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
+      gap: 6px;
     }
 
     .tag {
-      font-size: 0.8rem;
+      font-size: 0.76rem;
       color: var(--text-secondary);
       background: var(--glass-bg-sub);
       border: 1px solid rgba(255, 255, 255, 0.85);
-      padding: 5px 12px;
-      border-radius: 8px;
+      padding: 3px 9px;
+      border-radius: 6px;
     }
     .tag.highlight {
       background: var(--accent-pink-soft);
@@ -559,47 +566,47 @@
     }
 
     .modal-box {
-      background: rgba(255, 255, 255, 0.95);
+      background: rgba(255, 255, 255, 0.96);
       border: 1px solid #ffffff;
-      border-radius: 18px;
-      padding: 24px;
+      border-radius: 16px;
+      padding: 20px;
       max-width: 440px;
       width: 100%;
       box-shadow: 0 20px 40px rgba(15, 23, 42, 0.15);
     }
 
     .modal-title {
-      font-size: 1.05rem;
+      font-size: 1rem;
       font-weight: 700;
       color: var(--text-main);
       margin-bottom: 6px;
     }
 
     .modal-desc {
-      font-size: 0.82rem;
+      font-size: 0.8rem;
       color: var(--text-secondary);
-      margin-bottom: 16px;
-      line-height: 1.5;
+      margin-bottom: 14px;
+      line-height: 1.45;
     }
 
     .form-group {
-      margin-bottom: 14px;
+      margin-bottom: 12px;
     }
 
     .form-group label {
       display: block;
-      font-size: 0.78rem;
+      font-size: 0.76rem;
       font-weight: 600;
       color: var(--text-secondary);
-      margin-bottom: 5px;
+      margin-bottom: 4px;
     }
 
     .form-group input {
       width: 100%;
-      padding: 10px 12px;
+      padding: 8px 10px;
       border: 1px solid #cbd5e1;
-      border-radius: 10px;
-      font-size: 0.88rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
       color: var(--text-main);
       background: #f8fafc;
     }
@@ -613,17 +620,17 @@
     .modal-actions {
       display: flex;
       justify-content: flex-end;
-      gap: 10px;
-      margin-top: 18px;
+      gap: 8px;
+      margin-top: 16px;
     }
 
     .btn-primary {
       background: var(--accent-sky);
       color: #ffffff;
       border: none;
-      padding: 9px 18px;
-      border-radius: 10px;
-      font-size: 0.85rem;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 0.82rem;
       font-weight: 600;
       cursor: pointer;
     }
@@ -632,9 +639,9 @@
       background: #f1f5f9;
       color: var(--text-secondary);
       border: none;
-      padding: 9px 14px;
-      border-radius: 10px;
-      font-size: 0.85rem;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 0.82rem;
       font-weight: 600;
       cursor: pointer;
     }
@@ -652,11 +659,11 @@
     <div class="header-meta">
       <span class="sync-badge num" id="sync-status">準備中</span>
       <button class="btn-pill" id="refresh-btn" title="最新情報を取得">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
         更新
       </button>
       <button class="btn-pill btn-icon-only" id="settings-btn" title="接続設定（GAS URL・合言葉）">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
       </button>
     </div>
   </header>
@@ -667,13 +674,11 @@
 
   <main class="dashboard-grid">
 
-    <!-- =====================================
-         Tier 1: 鉄道運行情報 ＆ 天気・洗濯指数
-         ===================================== -->
+    <!-- Tier 1: 鉄道運行情報 ＆ 天気・洗濯指数 -->
     <section class="card span-12 transit-card" id="transit-card">
       <div class="transit-row">
         <div class="transit-route">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="16" rx="2"/><path d="M4 11h16"/><path d="M12 3v8"/><path d="m8 19-2 3"/><path d="m18 22-2-3"/><path d="M8 15h.01"/><path d="M16 15h.01"/></svg>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="16" rx="2"/><path d="M4 11h16"/><path d="M12 3v8"/><path d="m8 19-2 3"/><path d="m18 22-2-3"/><path d="M8 15h.01"/><path d="M16 15h.01"/></svg>
           <span id="transit-route-name">通勤路線 運行状況</span>
         </div>
         <div class="transit-status" id="transit-status">
@@ -709,9 +714,7 @@
       </div>
     </section>
 
-    <!-- =====================================
-         Tier 2: 今日の予定 ＆ タスク
-         ===================================== -->
+    <!-- Tier 2: 今日の予定 ＆ タスク -->
     <section class="card span-7">
       <div class="card-header">
         <h2 class="card-title">
@@ -736,9 +739,7 @@
       </ul>
     </section>
 
-    <!-- =====================================
-         Tier 3: 銭湯定休日 ＆ TV・ラジオ番組
-         ===================================== -->
+    <!-- Tier 3: 銭湯定休日 ＆ TV・ラジオ番組 -->
     <section class="card span-5">
       <div class="card-header">
         <h2 class="card-title">
@@ -763,9 +764,7 @@
       </ul>
     </section>
 
-    <!-- =====================================
-         Tier 4: おもなニュース ＆ 今日は何の日
-         ===================================== -->
+    <!-- Tier 4: おもなニュース ＆ 今日は何の日 -->
     <section class="card span-7">
       <div class="card-header">
         <h2 class="card-title">
@@ -793,9 +792,7 @@
   </main>
 </div>
 
-<!-- =====================================
-     初期設定モーダル（GitHub公開時のセキュリティ対策）
-     ===================================== -->
+<!-- 初期設定モーダル -->
 <div class="modal-backdrop" id="settings-modal">
   <div class="modal-box">
     <h2 class="modal-title">GAS 接続設定</h2>
@@ -818,9 +815,6 @@
 </div>
 
 <script>
-  /* =========================================================
-     1. ストレージキー・デフォルト設定（秘密情報はHTMLに直書きしない）
-     ========================================================= */
   const STORAGE_KEYS = {
     AUTH_CONFIG: "morning_briefing_auth_v1",
     GAS_CACHE: "morning_briefing_gas_v1",
@@ -828,18 +822,13 @@
     TODO_CHECKED: "morning_briefing_todo_checked_v1"
   };
 
-  // 位置情報取得失敗時のフォールバック座標（大阪市）
   const FALLBACK_COORDS = { lat: 34.6937, lon: 135.5023, fallbackCity: "大阪府 大阪市（既定値）" };
 
-  /* =========================================================
-     2. 初期化・イベント登録
-     ========================================================= */
   document.addEventListener("DOMContentLoaded", () => {
     renderHeaderDate();
     registerServiceWorker();
     setupSettingsModal();
 
-    // 初回起動時（設定未保存）なら設定モーダルを自動表示
     const auth = getAuthConfig();
     if (!auth.gasUrl || !auth.token) {
       openSettingsModal();
@@ -851,7 +840,6 @@
       initDashboard(true);
     });
 
-    // ToDoチェック状態の切り替え＆ローカル保持
     document.getElementById("tasks-list").addEventListener("click", (e) => {
       const li = e.target.closest(".todo-item");
       if (!li) return;
@@ -877,9 +865,6 @@
     }
   }
 
-  /* =========================================================
-     3. 接続設定（GAS URL & 合言葉）のローカル保存管理
-     ========================================================= */
   function getAuthConfig() {
     try {
       return JSON.parse(localStorage.getItem(STORAGE_KEYS.AUTH_CONFIG) || "{}");
@@ -914,9 +899,6 @@
     document.getElementById("settings-modal").classList.add("is-open");
   }
 
-  /* =========================================================
-     4. ダッシュボード全体制御
-     ========================================================= */
   async function initDashboard(forceRefresh = false) {
     const refreshBtn = document.getElementById("refresh-btn");
     refreshBtn.disabled = true;
@@ -929,16 +911,12 @@
     refreshBtn.disabled = false;
   }
 
-  /* =========================================================
-     5. GASデータ取得・キャッシュ・描画処理
-     ========================================================= */
   async function loadGasSection(forceRefresh = false) {
     const statusEl = document.getElementById("sync-status");
     const staleBanner = document.getElementById("stale-banner");
     const now = new Date();
     const auth = getAuthConfig();
 
-    // 1. localStorageから前回のキャッシュを即座に復元
     const cachedRaw = localStorage.getItem(STORAGE_KEYS.GAS_CACHE);
     if (cachedRaw) {
       try {
@@ -951,7 +929,6 @@
       }
     }
 
-    // 接続設定が未入力の場合はデモデータを表示して案内
     if (!auth.gasUrl || !auth.token) {
       if (!cachedRaw) renderGasData(getDemoGasData());
       statusEl.textContent = "未設定（デモ表示）";
@@ -959,7 +936,6 @@
       return;
     }
 
-    // 2. 裏側でGASから最新データを取得
     statusEl.textContent = "同期中";
     statusEl.classList.add("is-loading");
 
@@ -1036,7 +1012,7 @@
       tasksEl.innerHTML = `<li class="empty-msg">本日のタスクはありません</li>`;
     }
 
-    // ⑥ 銭湯定休日（施設名のみシンプルに表示）
+    // ⑥ 銭湯定休日
     const sentoContainer = document.getElementById("sento-container");
     if (data.sentoClosed && data.sentoClosed.length > 0) {
       const badges = data.sentoClosed.map(name =>
@@ -1061,7 +1037,7 @@
       mediaEl.innerHTML = `<li class="empty-msg">本日登録されている番組はありません</li>`;
     }
 
-    // ⑧ おもなニュース（複数媒体バッジ対応）
+    // ⑧ おもなニュース
     const newsEl = document.getElementById("news-list");
     if (data.news && data.news.length > 0) {
       newsEl.innerHTML = data.news.map(item =>
@@ -1089,14 +1065,10 @@
     }
   }
 
-  /* =========================================================
-     6. 現在地取得 ＋ Open-Meteo 天気＆洗濯指数（詳細エラー理由付き）
-     ========================================================= */
   async function loadWeatherSection(forceRefresh = false) {
     const noticeEl = document.getElementById("weather-notice");
     noticeEl.style.display = "none";
 
-    // 1. 当日1時間以内のキャッシュがあれば即座に表示
     const cachedRaw = localStorage.getItem(STORAGE_KEYS.WEATHER_CACHE);
     if (cachedRaw) {
       try {
@@ -1111,7 +1083,6 @@
       }
     }
 
-    // 2. Geolocation APIから現在地を取得（失敗時は理由を返却してフォールバック座標を使用）
     const locResult = await getCurrentCoordinatesWithReason();
     if (locResult.reason) {
       noticeEl.textContent = `※ ${locResult.reason}（既定地域の天気を表示）`;
@@ -1122,7 +1093,6 @@
       ? FALLBACK_COORDS.fallbackCity
       : await fetchCityName(locResult.lat, locResult.lon);
 
-    // 3. Open-Meteo APIで天気を取得
     const apiUrl = new URL("https://api.open-meteo.com/v1/forecast");
     apiUrl.searchParams.set("latitude", locResult.lat);
     apiUrl.searchParams.set("longitude", locResult.lon);
@@ -1193,9 +1163,6 @@
     laundryBox.querySelector(".laundry-label").style.color = laundry.isGood ? "var(--accent-green)" : "var(--accent-pink)";
   }
 
-  /**
-   * 位置情報取得（失敗理由を日本語で明確に返す）
-   */
   function getCurrentCoordinatesWithReason() {
     return new Promise((resolve) => {
       if (!window.isSecureContext) {
@@ -1292,9 +1259,6 @@
     return `<svg viewBox="0 0 24 24"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M16 14v6"/><path d="M8 14v6"/><path d="M12 16v6"/></svg>`;
   }
 
-  /* =========================================================
-     7. ユーティリティ関数
-     ========================================================= */
   function isSameDay(d1, d2) {
     return d1.getFullYear() === d2.getFullYear() &&
            d1.getMonth() === d2.getMonth() &&

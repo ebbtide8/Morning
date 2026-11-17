@@ -1,0 +1,25 @@
+{
+  "name": "Morning Information",
+  "short_name": "Morning Info",
+  "description": "毎朝の天気・洗濯指数・運行情報・予定・ニュースを一画面に集約するダッシュボード",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#e0f2fe",
+  "theme_color": "#e0f2fe",
+  "icons": [
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
