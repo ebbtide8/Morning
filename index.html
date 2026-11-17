@@ -107,7 +107,7 @@
     .header-meta {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 8px;
       font-size: 0.78rem;
       color: var(--text-muted);
     }
@@ -116,6 +116,7 @@
       display: inline-flex;
       align-items: center;
       gap: 5px;
+      margin-right: 4px;
     }
 
     .sync-badge.is-loading::before {
@@ -132,7 +133,7 @@
       50% { opacity: 1; transform: scale(1.15); }
     }
 
-    .btn-refresh {
+    .btn-pill {
       display: inline-flex;
       align-items: center;
       gap: 5px;
@@ -150,18 +151,23 @@
       transition: all 0.2s ease;
     }
 
-    .btn-refresh:hover {
+    .btn-pill:hover {
       background: #ffffff;
       transform: translateY(-1px);
     }
 
-    .btn-refresh:disabled {
+    .btn-pill:disabled {
       opacity: 0.6;
       cursor: not-allowed;
       transform: none;
     }
 
-    /* 日付跨ぎキャッシュ表示時の控えめな通知バー */
+    .btn-icon-only {
+      padding: 6px 9px;
+      color: var(--text-secondary);
+    }
+
+    /* 通知バナー */
     .stale-banner {
       display: none;
       margin-bottom: 14px;
@@ -200,6 +206,7 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 14px;
+      gap: 8px;
     }
 
     .card-title {
@@ -210,6 +217,7 @@
       display: flex;
       align-items: center;
       gap: 7px;
+      white-space: nowrap;
     }
 
     .card-title svg {
@@ -311,6 +319,7 @@
       align-items: center;
       justify-content: center;
       color: var(--accent-sky);
+      flex-shrink: 0;
     }
 
     .weather-icon-wrap svg {
@@ -338,6 +347,13 @@
       font-size: 0.82rem;
       color: var(--text-muted);
       margin-top: 3px;
+    }
+
+    .weather-notice {
+      font-size: 0.76rem;
+      color: var(--accent-pink);
+      margin-top: 4px;
+      display: none;
     }
 
     .laundry-box {
@@ -445,9 +461,9 @@
     }
 
     .sento-badge {
-      padding: 6px 13px;
+      padding: 6px 14px;
       border-radius: 999px;
-      font-size: 0.82rem;
+      font-size: 0.84rem;
       font-weight: 600;
       background: var(--accent-pink-soft);
       color: var(--accent-pink);
@@ -521,6 +537,107 @@
       border-color: var(--accent-pink-border);
       font-weight: 600;
     }
+
+    /* =========================================
+       初期設定・認証トークン入力モーダル
+       ========================================= */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.35);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 100;
+    }
+
+    .modal-backdrop.is-open {
+      display: flex;
+    }
+
+    .modal-box {
+      background: rgba(255, 255, 255, 0.95);
+      border: 1px solid #ffffff;
+      border-radius: 18px;
+      padding: 24px;
+      max-width: 440px;
+      width: 100%;
+      box-shadow: 0 20px 40px rgba(15, 23, 42, 0.15);
+    }
+
+    .modal-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 6px;
+    }
+
+    .modal-desc {
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+      margin-bottom: 16px;
+      line-height: 1.5;
+    }
+
+    .form-group {
+      margin-bottom: 14px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 5px;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      font-size: 0.88rem;
+      color: var(--text-main);
+      background: #f8fafc;
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: var(--accent-sky);
+      background: #ffffff;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .btn-primary {
+      background: var(--accent-sky);
+      color: #ffffff;
+      border: none;
+      padding: 9px 18px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn-secondary {
+      background: #f1f5f9;
+      color: var(--text-secondary);
+      border: none;
+      padding: 9px 14px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -534,9 +651,12 @@
     </div>
     <div class="header-meta">
       <span class="sync-badge num" id="sync-status">準備中</span>
-      <button class="btn-refresh" id="refresh-btn" title="最新情報を取得">
+      <button class="btn-pill" id="refresh-btn" title="最新情報を取得">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
         更新
+      </button>
+      <button class="btn-pill btn-icon-only" id="settings-btn" title="接続設定（GAS URL・合言葉）">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
       </button>
     </div>
   </header>
@@ -579,6 +699,7 @@
           <div>
             <div class="weather-temp num" id="weather-temp">--<small>°C</small></div>
             <div class="weather-detail num" id="weather-detail">取得中...</div>
+            <div class="weather-notice" id="weather-notice"></div>
           </div>
         </div>
         <div class="laundry-box" id="laundry-box">
@@ -672,20 +793,43 @@
   </main>
 </div>
 
+<!-- =====================================
+     初期設定モーダル（GitHub公開時のセキュリティ対策）
+     ===================================== -->
+<div class="modal-backdrop" id="settings-modal">
+  <div class="modal-box">
+    <h2 class="modal-title">GAS 接続設定</h2>
+    <p class="modal-desc">
+      入力したURLと合言葉はこの端末のブラウザ（localStorage）にのみ保存され、GitHub等の外部には送信されません。
+    </p>
+    <div class="form-group">
+      <label for="input-gas-url">GAS ウェブアプリ URL（.../exec）</label>
+      <input type="url" id="input-gas-url" placeholder="https://script.google.com/macros/s/.../exec">
+    </div>
+    <div class="form-group">
+      <label for="input-secret-token">秘密の合言葉（SECRET_TOKEN）</label>
+      <input type="password" id="input-secret-token" placeholder="GAS側で設定した英数字の合言葉">
+    </div>
+    <div class="modal-actions">
+      <button type="button" class="btn-secondary" id="modal-cancel-btn">閉じる</button>
+      <button type="button" class="btn-primary" id="modal-save-btn">保存して再取得</button>
+    </div>
+  </div>
+</div>
+
 <script>
   /* =========================================================
-     1. 設定定数（ここをご自身の環境に合わせて書き換えてください）
+     1. ストレージキー・デフォルト設定（秘密情報はHTMLに直書きしない）
      ========================================================= */
-  const CONFIG = {
-    // GASのWebアプリURL（末尾に ?token=合言葉 を付与）
-    GAS_URL: "https://script.google.com/macros/s/AKfycbxRuyGxfHaS404Y7UR3XKKQmTqtHVgZA2yVk1urUor42Fgc2R_WcsNUURzNnS8yMeu4/exec?token=mb_84k9p2m7x5v1q3w6z9",
-    // localStorageの保存キー
-    GAS_CACHE_KEY: "morning_briefing_gas_v1",
-    WEATHER_CACHE_KEY: "morning_briefing_weather_v1",
-    TODO_CHECKED_KEY: "morning_briefing_todo_checked_v1",
-    // 位置情報取得失敗時のフォールバック座標（大阪市）
-    FALLBACK_COORDS: { lat: 34.6937, lon: 135.5023 }
+  const STORAGE_KEYS = {
+    AUTH_CONFIG: "morning_briefing_auth_v1",
+    GAS_CACHE: "morning_briefing_gas_v1",
+    WEATHER_CACHE: "morning_briefing_weather_v1",
+    TODO_CHECKED: "morning_briefing_todo_checked_v1"
   };
+
+  // 位置情報取得失敗時のフォールバック座標（大阪市）
+  const FALLBACK_COORDS = { lat: 34.6937, lon: 135.5023, fallbackCity: "大阪府 大阪市（既定値）" };
 
   /* =========================================================
      2. 初期化・イベント登録
@@ -693,7 +837,15 @@
   document.addEventListener("DOMContentLoaded", () => {
     renderHeaderDate();
     registerServiceWorker();
-    initDashboard();
+    setupSettingsModal();
+
+    // 初回起動時（設定未保存）なら設定モーダルを自動表示
+    const auth = getAuthConfig();
+    if (!auth.gasUrl || !auth.token) {
+      openSettingsModal();
+    }
+
+    initDashboard(false);
 
     document.getElementById("refresh-btn").addEventListener("click", () => {
       initDashboard(true);
@@ -726,31 +878,68 @@
   }
 
   /* =========================================================
-     3. ダッシュボード全体制御（キャッシュ即時表示 ＋ 裏側更新）
+     3. 接続設定（GAS URL & 合言葉）のローカル保存管理
+     ========================================================= */
+  function getAuthConfig() {
+    try {
+      return JSON.parse(localStorage.getItem(STORAGE_KEYS.AUTH_CONFIG) || "{}");
+    } catch {
+      return {};
+    }
+  }
+
+  function setupSettingsModal() {
+    const modal = document.getElementById("settings-modal");
+    const urlInput = document.getElementById("input-gas-url");
+    const tokenInput = document.getElementById("input-secret-token");
+
+    document.getElementById("settings-btn").addEventListener("click", openSettingsModal);
+    document.getElementById("modal-cancel-btn").addEventListener("click", () => {
+      modal.classList.remove("is-open");
+    });
+
+    document.getElementById("modal-save-btn").addEventListener("click", () => {
+      const gasUrl = urlInput.value.trim();
+      const token = tokenInput.value.trim();
+      localStorage.setItem(STORAGE_KEYS.AUTH_CONFIG, JSON.stringify({ gasUrl, token }));
+      modal.classList.remove("is-open");
+      initDashboard(true);
+    });
+  }
+
+  function openSettingsModal() {
+    const auth = getAuthConfig();
+    document.getElementById("input-gas-url").value = auth.gasUrl || "";
+    document.getElementById("input-secret-token").value = auth.token || "";
+    document.getElementById("settings-modal").classList.add("is-open");
+  }
+
+  /* =========================================================
+     4. ダッシュボード全体制御
      ========================================================= */
   async function initDashboard(forceRefresh = false) {
     const refreshBtn = document.getElementById("refresh-btn");
     refreshBtn.disabled = true;
 
-    // 天気・洗濯指数とGASデータを並列で処理
     await Promise.all([
       loadWeatherSection(forceRefresh),
-      loadGasSection()
+      loadGasSection(forceRefresh)
     ]);
 
     refreshBtn.disabled = false;
   }
 
   /* =========================================================
-     4. GASデータ取得・キャッシュ・描画処理
+     5. GASデータ取得・キャッシュ・描画処理
      ========================================================= */
-  async function loadGasSection() {
+  async function loadGasSection(forceRefresh = false) {
     const statusEl = document.getElementById("sync-status");
     const staleBanner = document.getElementById("stale-banner");
     const now = new Date();
+    const auth = getAuthConfig();
 
     // 1. localStorageから前回のキャッシュを即座に復元
-    const cachedRaw = localStorage.getItem(CONFIG.GAS_CACHE_KEY);
+    const cachedRaw = localStorage.getItem(STORAGE_KEYS.GAS_CACHE);
     if (cachedRaw) {
       try {
         const cached = JSON.parse(cachedRaw);
@@ -758,32 +947,41 @@
         renderGasData(cached.data);
         staleBanner.style.display = isToday ? "none" : "block";
       } catch (e) {
-        console.warn("GASキャッシュの復元失敗:", e);
+        console.warn("GASキャッシュ復元失敗:", e);
       }
     }
 
-    // 2. 裏側でGASから最新データを取得（Stale-While-Revalidate）
+    // 接続設定が未入力の場合はデモデータを表示して案内
+    if (!auth.gasUrl || !auth.token) {
+      if (!cachedRaw) renderGasData(getDemoGasData());
+      statusEl.textContent = "未設定（デモ表示）";
+      staleBanner.style.display = "none";
+      return;
+    }
+
+    // 2. 裏側でGASから最新データを取得
     statusEl.textContent = "同期中";
     statusEl.classList.add("is-loading");
 
     try {
-      // 未設定時のデモ確認用（URLが初期値のままならサンプルデータを表示）
-      if (CONFIG.GAS_URL.includes("デプロイID")) {
-        const demoData = getDemoGasData();
-        renderGasData(demoData);
-        statusEl.textContent = "デモ表示";
+      const requestUrl = new URL(auth.gasUrl);
+      requestUrl.searchParams.set("token", auth.token);
+      if (forceRefresh) requestUrl.searchParams.set("refresh", "1");
+
+      const response = await fetch(requestUrl.toString());
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const freshData = await response.json();
+
+      if (freshData.error === "Unauthorized") {
+        statusEl.textContent = "合言葉が一致しません";
         staleBanner.style.display = "none";
         return;
       }
 
-      const response = await fetch(CONFIG.GAS_URL);
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const freshData = await response.json();
-
       renderGasData(freshData);
       staleBanner.style.display = "none";
 
-      localStorage.setItem(CONFIG.GAS_CACHE_KEY, JSON.stringify({
+      localStorage.setItem(STORAGE_KEYS.GAS_CACHE, JSON.stringify({
         savedAt: now.toISOString(),
         data: freshData
       }));
@@ -792,25 +990,12 @@
       statusEl.textContent = `更新 ${timeStr}`;
     } catch (err) {
       console.error("GAS取得エラー:", err);
-      statusEl.textContent = cachedRaw ? "キャッシュ表示中" : "取得エラー";
+      statusEl.textContent = cachedRaw ? "キャッシュ表示中" : "GAS接続エラー";
     } finally {
       statusEl.classList.remove("is-loading");
     }
   }
 
-  /**
-   * GASから返却されたJSONを各カードへ描画
-   * 想定JSON構造:
-   * {
-   *   transit: { route: "路線名", isDelayed: false, statusText: "平常運転（遅れなし）" },
-   *   events: [{ time: "14:00", title: "定例会議" }],
-   *   tasks: [{ id: "1", title: "請求書確認" }],
-   *   sentoClosed: ["〇〇温泉"],
-   *   media: [{ time: "22:00", station: "TBSラジオ", title: "番組名" }],
-   *   news: [{ title: "見出し", url: "https://..." }],
-   *   anniversaries: [{ name: "記念日名", highlight: true }]
-   * }
-   */
   function renderGasData(data) {
     if (!data) return;
 
@@ -835,7 +1020,7 @@
       eventsEl.innerHTML = `<li class="empty-msg">本日の予定はありません</li>`;
     }
 
-    // ⑤ Google ToDoタスク（ローカルのチェック状態も復元）
+    // ⑤ Google ToDoタスク
     const tasksEl = document.getElementById("tasks-list");
     const checkedMap = getTodoCheckState();
     if (data.tasks && data.tasks.length > 0) {
@@ -851,11 +1036,11 @@
       tasksEl.innerHTML = `<li class="empty-msg">本日のタスクはありません</li>`;
     }
 
-    // ⑥ 銭湯定休日
+    // ⑥ 銭湯定休日（施設名のみシンプルに表示）
     const sentoContainer = document.getElementById("sento-container");
     if (data.sentoClosed && data.sentoClosed.length > 0) {
       const badges = data.sentoClosed.map(name =>
-        `<span class="sento-badge">${escapeHtml(name)}（本日休業）</span>`
+        `<span class="sento-badge">${escapeHtml(name)}</span>`
       ).join("");
       sentoContainer.innerHTML = `<div class="sento-list">${badges}</div>`;
     } else {
@@ -876,11 +1061,16 @@
       mediaEl.innerHTML = `<li class="empty-msg">本日登録されている番組はありません</li>`;
     }
 
-    // ⑧ おもなニュース
+    // ⑧ おもなニュース（複数媒体バッジ対応）
     const newsEl = document.getElementById("news-list");
     if (data.news && data.news.length > 0) {
-      newsEl.innerHTML = data.news.slice(0, 6).map(item =>
-        `<li><a href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(item.title)}</a></li>`
+      newsEl.innerHTML = data.news.map(item =>
+        `<li>
+          <a href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer">
+            ${item.source ? `<span class="media-station" style="margin-right:6px;">${escapeHtml(item.source)}</span>` : ""}
+            ${escapeHtml(item.title)}
+          </a>
+        </li>`
       ).join("");
     } else {
       newsEl.innerHTML = `<li class="empty-msg">ニュースを取得できませんでした</li>`;
@@ -900,32 +1090,42 @@
   }
 
   /* =========================================================
-     5. 現在地取得 ＋ Open-Meteo 天気＆洗濯指数算出
+     6. 現在地取得 ＋ Open-Meteo 天気＆洗濯指数（詳細エラー理由付き）
      ========================================================= */
   async function loadWeatherSection(forceRefresh = false) {
-    // 1. 直近の天気キャッシュ（1時間以内）があれば即座に表示
-    const cachedRaw = localStorage.getItem(CONFIG.WEATHER_CACHE_KEY);
+    const noticeEl = document.getElementById("weather-notice");
+    noticeEl.style.display = "none";
+
+    // 1. 当日1時間以内のキャッシュがあれば即座に表示
+    const cachedRaw = localStorage.getItem(STORAGE_KEYS.WEATHER_CACHE);
     if (cachedRaw) {
       try {
         const cached = JSON.parse(cachedRaw);
         renderWeatherUI(cached.data);
         const ageMinutes = (Date.now() - new Date(cached.savedAt).getTime()) / 60000;
         if (!forceRefresh && ageMinutes < 60 && isSameDay(new Date(cached.savedAt), new Date())) {
-          return; // 1時間以内の当日キャッシュなら再取得をスキップ
+          return;
         }
       } catch (e) {
         console.warn("天気キャッシュ復元失敗:", e);
       }
     }
 
-    // 2. Geolocation APIから現在地を取得
-    const coords = await getCurrentCoordinates();
-    const cityName = await fetchCityName(coords.lat, coords.lon);
+    // 2. Geolocation APIから現在地を取得（失敗時は理由を返却してフォールバック座標を使用）
+    const locResult = await getCurrentCoordinatesWithReason();
+    if (locResult.reason) {
+      noticeEl.textContent = `※ ${locResult.reason}（既定地域の天気を表示）`;
+      noticeEl.style.display = "block";
+    }
+
+    const cityName = locResult.isFallback
+      ? FALLBACK_COORDS.fallbackCity
+      : await fetchCityName(locResult.lat, locResult.lon);
 
     // 3. Open-Meteo APIで天気を取得
     const apiUrl = new URL("https://api.open-meteo.com/v1/forecast");
-    apiUrl.searchParams.set("latitude", coords.lat);
-    apiUrl.searchParams.set("longitude", coords.lon);
+    apiUrl.searchParams.set("latitude", locResult.lat);
+    apiUrl.searchParams.set("longitude", locResult.lon);
     apiUrl.searchParams.set("current", "temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m");
     apiUrl.searchParams.set("daily", "temperature_2m_max,temperature_2m_min,precipitation_probability_max");
     apiUrl.searchParams.set("timezone", "Asia/Tokyo");
@@ -933,8 +1133,14 @@
 
     try {
       const res = await fetch(apiUrl.toString());
-      if (!res.ok) throw new Error(`Weather HTTP ${res.status}`);
+      if (!res.ok) {
+        throw new Error(`Open-Meteo APIがエラーを返しました (HTTP ${res.status})`);
+      }
       const data = await res.json();
+
+      if (!data.current || !data.daily) {
+        throw new Error("気象データの形式が不正です");
+      }
 
       const weatherPayload = {
         cityName,
@@ -949,13 +1155,17 @@
 
       renderWeatherUI(weatherPayload);
 
-      localStorage.setItem(CONFIG.WEATHER_CACHE_KEY, JSON.stringify({
+      localStorage.setItem(STORAGE_KEYS.WEATHER_CACHE, JSON.stringify({
         savedAt: new Date().toISOString(),
         data: weatherPayload
       }));
     } catch (err) {
       console.error("天気取得エラー:", err);
-      document.getElementById("weather-detail").textContent = "天気データの取得に失敗しました";
+      const reasonMsg = !navigator.onLine
+        ? "インターネットに接続されていません（オフライン）"
+        : err.message || "通信エラーが発生しました";
+      document.getElementById("weather-detail").textContent = `天気取得失敗: ${reasonMsg}`;
+      document.getElementById("laundry-index").textContent = "判定不可";
     }
   }
 
@@ -983,18 +1193,51 @@
     laundryBox.querySelector(".laundry-label").style.color = laundry.isGood ? "var(--accent-green)" : "var(--accent-pink)";
   }
 
-  function getCurrentCoordinates() {
+  /**
+   * 位置情報取得（失敗理由を日本語で明確に返す）
+   */
+  function getCurrentCoordinatesWithReason() {
     return new Promise((resolve) => {
-      if (!("geolocation" in navigator)) {
-        resolve(CONFIG.FALLBACK_COORDS);
+      if (!window.isSecureContext) {
+        resolve({
+          ...FALLBACK_COORDS,
+          isFallback: true,
+          reason: "HTTPS接続ではないため位置情報APIがブロックされました"
+        });
         return;
       }
+
+      if (!("geolocation" in navigator)) {
+        resolve({
+          ...FALLBACK_COORDS,
+          isFallback: true,
+          reason: "お使いのブラウザは位置情報取得に対応していません"
+        });
+        return;
+      }
+
       navigator.geolocation.getCurrentPosition(
         (pos) => resolve({
           lat: Number(pos.coords.latitude.toFixed(4)),
-          lon: Number(pos.coords.longitude.toFixed(4))
+          lon: Number(pos.coords.longitude.toFixed(4)),
+          isFallback: false,
+          reason: null
         }),
-        () => resolve(CONFIG.FALLBACK_COORDS),
+        (err) => {
+          let reason = "位置情報を取得できませんでした";
+          if (err.code === 1) {
+            reason = "ブラウザまたはOSで位置情報の利用が許可されていません";
+          } else if (err.code === 2) {
+            reason = "電波状況などにより現在地を特定できませんでした";
+          } else if (err.code === 3) {
+            reason = "現在地の測位がタイムアウトしました";
+          }
+          resolve({
+            ...FALLBACK_COORDS,
+            isFallback: true,
+            reason
+          });
+        },
         { enableHighAccuracy: false, timeout: 8000, maximumAge: 1800000 }
       );
     });
@@ -1050,7 +1293,7 @@
   }
 
   /* =========================================================
-     6. ユーティリティ関数
+     7. ユーティリティ関数
      ========================================================= */
   function isSameDay(d1, d2) {
     return d1.getFullYear() === d2.getFullYear() &&
@@ -1067,7 +1310,7 @@
 
   function getTodoCheckState() {
     try {
-      const raw = JSON.parse(localStorage.getItem(CONFIG.TODO_CHECKED_KEY) || "{}");
+      const raw = JSON.parse(localStorage.getItem(STORAGE_KEYS.TODO_CHECKED) || "{}");
       if (raw.date && isSameDay(new Date(raw.date), new Date())) {
         return raw.checked || {};
       }
@@ -1078,16 +1321,15 @@
   function saveTodoCheckState(taskId, isChecked) {
     const current = getTodoCheckState();
     current[taskId] = isChecked;
-    localStorage.setItem(CONFIG.TODO_CHECKED_KEY, JSON.stringify({
+    localStorage.setItem(STORAGE_KEYS.TODO_CHECKED, JSON.stringify({
       date: new Date().toISOString(),
       checked: current
     }));
   }
 
-  // GAS URL未設定時に画面レイアウトを確認するためのサンプルデータ
   function getDemoGasData() {
     return {
-      transit: { route: "大阪メトロ 谷町線", isDelayed: false, statusText: "平常運転（遅れなし）" },
+      transit: { route: "大阪メトロ 谷町線 ・ JR大阪環状線", isDelayed: false, statusText: "すべて平常運転（遅れなし）" },
       events: [
         { time: "終日", title: "在宅勤務" },
         { time: "14:00", title: "定例オンラインミーティング" }
@@ -1096,14 +1338,14 @@
         { id: "demo1", title: "見積データの最終確認" },
         { id: "demo2", title: "日用品の買い出し" }
       ],
-      sentoClosed: ["〇〇温泉"],
+      sentoClosed: ["駒川温泉"],
       media: [
         { time: "22:00", station: "TBSラジオ", title: "武田砂鉄のプレ金ナイト" },
         { time: "25:00", station: "NHK FM", title: "ラジオ深夜便" }
       ],
       news: [
-        { title: "朝の主要ニュースヘッドライン（GAS接続後に自動更新されます）", url: "#" },
-        { title: "経済・社会トピックの最新記事リンクサンプル", url: "#" }
+        { source: "NHK", title: "右上の歯車アイコンからGASのURLと合言葉を登録すると実データに切り替わります", url: "#" },
+        { source: "Yahoo!", title: "入力した設定は端末のlocalStorageにのみ保存されます", url: "#" }
       ],
       anniversaries: [
         { name: "将棋の日", highlight: true },
