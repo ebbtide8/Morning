@@ -1,621 +1,1118 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>重複画像クリーナー (DupImage Finder)</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
-        .group-container { animation: fadeIn 0.5s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        
-        /* Custom scrollbar for better PWA feel */
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: #f1f1f1; }
-        ::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
-        
-        .image-card.marked-delete { outline: 3px solid #ef4444; background-color: #fef2f2; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#e0f2fe">
+  <title>Morning Information</title>
+  <link rel="manifest" href="./manifest.json">
+  <style>
+    /* =========================================
+       カラー＆質感定義（朝の澄んだ空・半透明ガラス風）
+       ========================================= */
+    :root {
+      --bg-sky: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 45%, #fdf2f8 100%);
+      
+      --glass-bg: rgba(255, 255, 255, 0.72);
+      --glass-bg-sub: rgba(255, 255, 255, 0.55);
+      --glass-border: rgba(255, 255, 255, 0.85);
+      --glass-shadow: 0 8px 24px -4px rgba(14, 116, 144, 0.07), 0 2px 6px -1px rgba(14, 116, 144, 0.04);
+
+      --text-main: #1e293b;
+      --text-secondary: #475569;
+      --text-muted: #64748b;
+
+      --accent-sky: #0284c7;
+      --accent-sky-soft: rgba(2, 132, 199, 0.1);
+
+      --accent-green: #059669;
+      --accent-green-soft: rgba(16, 185, 129, 0.12);
+      --accent-green-border: rgba(16, 185, 129, 0.35);
+
+      --accent-pink: #db2777;
+      --accent-pink-soft: rgba(244, 114, 182, 0.13);
+      --accent-pink-border: rgba(244, 114, 182, 0.35);
+
+      --accent-alert: #dc2626;
+      --accent-alert-soft: rgba(254, 226, 226, 0.85);
+    }
+
+    /* =========================================
+       ベースレイアウト＆タイポグラフィ
+       ========================================= */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif;
+      background: var(--bg-sky);
+      background-attachment: fixed;
+      color: var(--text-main);
+      line-height: 1.6;
+      letter-spacing: 0.02em;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+    }
+
+    .num {
+      font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.01em;
+    }
+
+    .container {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 24px 18px 40px;
+    }
+
+    /* =========================================
+       ヘッダー
+       ========================================= */
+    .app-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 22px;
+      padding: 0 4px 12px;
+      border-bottom: 1px solid rgba(2, 132, 199, 0.15);
+    }
+
+    .header-subtitle {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--accent-sky);
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .header-date {
+      font-size: 1.45rem;
+      font-weight: 600;
+      color: var(--text-main);
+      letter-spacing: 0.04em;
+    }
+
+    .header-date span {
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: var(--accent-pink);
+      margin-left: 6px;
+    }
+
+    .header-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .sync-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .sync-badge.is-loading::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background-color: var(--accent-sky);
+      animation: pulse 1.2s infinite ease-in-out;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.3; transform: scale(0.85); }
+      50% { opacity: 1; transform: scale(1.15); }
+    }
+
+    .btn-refresh {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid var(--glass-border);
+      color: var(--accent-sky);
+      padding: 6px 12px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-size: 0.78rem;
+      font-weight: 600;
+      box-shadow: 0 2px 6px rgba(2, 132, 199, 0.06);
+      transition: all 0.2s ease;
+    }
+
+    .btn-refresh:hover {
+      background: #ffffff;
+      transform: translateY(-1px);
+    }
+
+    .btn-refresh:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* 日付跨ぎキャッシュ表示時の控えめな通知バー */
+    .stale-banner {
+      display: none;
+      margin-bottom: 14px;
+      padding: 8px 14px;
+      border-radius: 10px;
+      background: var(--accent-pink-soft);
+      border: 1px solid var(--accent-pink-border);
+      color: var(--accent-pink);
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+
+    /* =========================================
+       CSS Grid ダッシュボード構造
+       ========================================= */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 18px;
+    }
+
+    .card {
+      background: var(--glass-bg);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+      padding: 18px 20px;
+      box-shadow: var(--glass-shadow);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    .card-title {
+      font-size: 0.82rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .card-title svg {
+      width: 15px;
+      height: 15px;
+      stroke: var(--accent-sky);
+      stroke-width: 1.8;
+      fill: none;
+    }
+
+    .span-12 { grid-column: span 12; }
+    .span-7  { grid-column: span 7; }
+    .span-5  { grid-column: span 5; }
+
+    @media (max-width: 768px) {
+      .span-7, .span-5 {
+        grid-column: span 12;
+      }
+      .container {
+        padding: 16px 14px 32px;
+      }
+    }
+
+    /* =========================================
+       Tier 1：鉄道運行情報 ＆ 天気・洗濯指数
+       ========================================= */
+    .transit-card {
+      padding: 13px 20px;
+      border-left: 4px solid var(--accent-green);
+      background: linear-gradient(90deg, rgba(236, 253, 245, 0.82) 0%, rgba(255, 255, 255, 0.72) 100%);
+    }
+
+    .transit-card.is-delayed {
+      border-left-color: var(--accent-alert);
+      background: var(--accent-alert-soft);
+    }
+
+    .transit-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .transit-route {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .transit-status {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--accent-green);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background-color: var(--accent-green);
+    }
+
+    .transit-card.is-delayed .transit-status {
+      color: var(--accent-alert);
+    }
+    .transit-card.is-delayed .status-dot {
+      background-color: var(--accent-alert);
+    }
+
+    /* 天気・洗濯指数 */
+    .weather-body {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .weather-main {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .weather-icon-wrap {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      background: var(--accent-sky-soft);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent-sky);
+    }
+
+    .weather-icon-wrap svg {
+      width: 28px;
+      height: 28px;
+      stroke: currentColor;
+      stroke-width: 1.6;
+      fill: none;
+    }
+
+    .weather-temp {
+      font-size: 2.15rem;
+      font-weight: 300;
+      color: var(--text-main);
+      line-height: 1.1;
+    }
+
+    .weather-temp small {
+      font-size: 1rem;
+      color: var(--text-muted);
+      margin-left: 2px;
+    }
+
+    .weather-detail {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-top: 3px;
+    }
+
+    .laundry-box {
+      background: var(--accent-green-soft);
+      border: 1px solid var(--accent-green-border);
+      border-radius: 12px;
+      padding: 11px 16px;
+      min-width: 200px;
+      transition: background 0.2s, border-color 0.2s;
+    }
+
+    .laundry-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      color: var(--accent-green);
+      margin-bottom: 2px;
+    }
+
+    .laundry-value {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    /* =========================================
+       Tier 2：今日の予定 ＆ タスク
+       ========================================= */
+    .item-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .item-list li {
+      padding: 9px 12px;
+      background: var(--glass-bg-sub);
+      border: 1px solid rgba(255, 255, 255, 0.7);
+      border-radius: 10px;
+      font-size: 0.88rem;
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+    }
+
+    .empty-msg {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      padding: 6px 2px;
+    }
+
+    .time-badge {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--accent-sky);
+      min-width: 44px;
+    }
+
+    .todo-item {
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+    .todo-item:hover {
+      background: rgba(255, 255, 255, 0.85);
+    }
+    .todo-item input[type="checkbox"] {
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      border: 1.5px solid var(--accent-sky);
+      border-radius: 4px;
+      background: #ffffff;
+      cursor: pointer;
+      position: relative;
+      top: 2px;
+      flex-shrink: 0;
+    }
+    .todo-item input[type="checkbox"]:checked {
+      background: var(--accent-sky);
+    }
+    .todo-item input[type="checkbox"]:checked::after {
+      content: "";
+      position: absolute;
+      left: 4px;
+      top: 1px;
+      width: 4px;
+      height: 8px;
+      border: solid #ffffff;
+      border-width: 0 1.8px 1.8px 0;
+      transform: rotate(45deg);
+    }
+    .todo-item.completed span {
+      text-decoration: line-through;
+      color: var(--text-muted);
+    }
+
+    /* =========================================
+       Tier 3：銭湯定休日 ＆ TV・ラジオ番組
+       ========================================= */
+    .sento-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .sento-badge {
+      padding: 6px 13px;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      background: var(--accent-pink-soft);
+      color: var(--accent-pink);
+      border: 1px solid var(--accent-pink-border);
+    }
+
+    .sento-open-msg {
+      font-size: 0.86rem;
+      color: var(--accent-green);
+      font-weight: 500;
+      padding: 6px 0;
+    }
+
+    .media-station {
+      font-size: 0.74rem;
+      padding: 2px 8px;
+      border-radius: 5px;
+      background: var(--accent-sky-soft);
+      color: var(--accent-sky);
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    /* =========================================
+       Tier 4：おもなニュース ＆ 今日は何の日
+       ========================================= */
+    .news-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .news-list li {
+      border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+    }
+
+    .news-list li:last-child {
+      border-bottom: none;
+    }
+
+    .news-list a {
+      color: var(--text-main);
+      text-decoration: none;
+      font-size: 0.88rem;
+      display: block;
+      padding: 9px 2px;
+      transition: color 0.15s ease;
+    }
+
+    .news-list a:hover {
+      color: var(--accent-sky);
+    }
+
+    .anniversary-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .tag {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      background: var(--glass-bg-sub);
+      border: 1px solid rgba(255, 255, 255, 0.85);
+      padding: 5px 12px;
+      border-radius: 8px;
+    }
+    .tag.highlight {
+      background: var(--accent-pink-soft);
+      color: var(--accent-pink);
+      border-color: var(--accent-pink-border);
+      font-weight: 600;
+    }
+  </style>
 </head>
-<body class="text-gray-800 min-h-screen flex flex-col">
+<body>
 
-    <!-- Header / Control Bar -->
-    <header class="bg-indigo-600 text-white shadow-md sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
-            <h1 class="text-xl font-bold flex items-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                DupImage Finder
-            </h1>
-            
-            <div class="flex flex-wrap gap-2">
-                <button id="btn-select-folder" class="bg-white text-indigo-600 hover:bg-indigo-50 px-4 py-2 rounded-lg font-medium transition-colors shadow flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-                    </svg>
-                    フォルダを選択
-                </button>
-                <button id="btn-batch-select" class="bg-indigo-500 hover:bg-indigo-400 text-white px-4 py-2 rounded-lg font-medium transition-colors shadow disabled:opacity-50 disabled:cursor-not-allowed" disabled>
-                    DupFileを一括選択
-                </button>
-                <button id="btn-delete" class="bg-red-500 hover:bg-red-400 text-white px-4 py-2 rounded-lg font-medium transition-colors shadow flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                    選択した画像を削除
-                </button>
-            </div>
-        </div>
-    </header>
-
-    <!-- Main Content -->
-    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
-        
-        <!-- API Not Supported Warning -->
-        <div id="not-supported-msg" class="hidden bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6" role="alert">
-            <p class="font-bold">非対応ブラウザ</p>
-            <p>お使いのブラウザは File System Access API に対応していません。Chrome、Edge、またはOperaを使用してください。</p>
-        </div>
-
-        <!-- Initial State -->
-        <div id="initial-state" class="text-center py-20">
-            <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-16 w-16 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-            </svg>
-            <h2 class="text-2xl font-semibold text-gray-700 mb-2">フォルダを選択してスキャン開始</h2>
-            <p class="text-gray-500 max-w-md mx-auto">画質や圧縮率が異なっていても、画像データの特徴から重複ファイルを探し出します。</p>
-        </div>
-
-        <!-- Progress Area -->
-        <div id="progress-area" class="hidden bg-white p-6 rounded-xl shadow-sm border border-gray-200 mb-8">
-            <h3 class="text-lg font-medium text-gray-800 mb-4" id="progress-text">画像をスキャン中... (0 / 0)</h3>
-            <div class="w-full bg-gray-200 rounded-full h-3 mb-2">
-                <div id="progress-bar" class="bg-indigo-600 h-3 rounded-full transition-all duration-300" style="width: 0%"></div>
-            </div>
-            <p class="text-sm text-gray-500" id="progress-detail">処理を準備しています...</p>
-        </div>
-
-        <!-- Results Area -->
-        <div id="results-area" class="hidden space-y-8">
-            <!-- Groups will be injected here -->
-        </div>
-
-        <!-- No Duplicates Message -->
-        <div id="no-duplicates-msg" class="hidden text-center py-16 bg-white rounded-xl shadow-sm border border-gray-200">
-            <div class="text-4xl mb-4">🎉</div>
-            <h2 class="text-xl font-semibold text-gray-700">重複画像は見つかりませんでした</h2>
-            <p class="text-gray-500 mt-2">指定されたフォルダ内は整理されています。</p>
-        </div>
-
-    </main>
-
-    <!-- Custom Message Box (Replaces alert/confirm) -->
-    <div id="message-modal" class="fixed inset-0 bg-black bg-opacity-50 z-[100] hidden flex items-center justify-center backdrop-blur-sm transition-opacity">
-        <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-6 mx-4 transform scale-95 transition-transform" id="message-modal-content">
-            <h3 class="text-xl font-bold text-gray-900 mb-2" id="message-title">通知</h3>
-            <p class="text-gray-600 mb-6" id="message-body">メッセージ内容</p>
-            <div class="flex justify-end gap-3" id="message-actions">
-                <button id="msg-btn-ok" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg font-medium transition-colors">OK</button>
-            </div>
-        </div>
+<div class="container">
+  <!-- ヘッダー -->
+  <header class="app-header">
+    <div>
+      <div class="header-subtitle">Morning Briefing</div>
+      <h1 class="header-date num" id="current-date">--月--日<span>---</span></h1>
     </div>
+    <div class="header-meta">
+      <span class="sync-badge num" id="sync-status">準備中</span>
+      <button class="btn-refresh" id="refresh-btn" title="最新情報を取得">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
+        更新
+      </button>
+    </div>
+  </header>
 
-    <script>
-        // --- Application State ---
-        const AppState = {
-            dirHandle: null,
-            imagesMap: {}, // Map internal ID to image data (for deletion)
-            duplicateGroups: [],
-            isProcessing: false
-        };
+  <div class="stale-banner" id="stale-banner">
+    前回のデータを表示しています。最新の予定とニュースを取得中です...
+  </div>
 
-        // --- DOM Elements ---
-        const UI = {
-            btnSelectFolder: document.getElementById('btn-select-folder'),
-            btnBatchSelect: document.getElementById('btn-batch-select'),
-            btnDelete: document.getElementById('btn-delete'),
-            initialState: document.getElementById('initial-state'),
-            progressArea: document.getElementById('progress-area'),
-            progressText: document.getElementById('progress-text'),
-            progressBar: document.getElementById('progress-bar'),
-            progressDetail: document.getElementById('progress-detail'),
-            resultsArea: document.getElementById('results-area'),
-            noDuplicatesMsg: document.getElementById('no-duplicates-msg'),
-            notSupportedMsg: document.getElementById('not-supported-msg'),
-            // Modal
-            modal: document.getElementById('message-modal'),
-            modalContent: document.getElementById('message-modal-content'),
-            modalTitle: document.getElementById('message-title'),
-            modalBody: document.getElementById('message-body'),
-            modalActions: document.getElementById('message-actions')
-        };
+  <main class="dashboard-grid">
 
-        // --- Check Browser Support ---
-        if (!('showDirectoryPicker' in window)) {
-            UI.notSupportedMsg.classList.remove('hidden');
-            UI.btnSelectFolder.disabled = true;
+    <!-- =====================================
+         Tier 1: 鉄道運行情報 ＆ 天気・洗濯指数
+         ===================================== -->
+    <section class="card span-12 transit-card" id="transit-card">
+      <div class="transit-row">
+        <div class="transit-route">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="16" rx="2"/><path d="M4 11h16"/><path d="M12 3v8"/><path d="m8 19-2 3"/><path d="m18 22-2-3"/><path d="M8 15h.01"/><path d="M16 15h.01"/></svg>
+          <span id="transit-route-name">通勤路線 運行状況</span>
+        </div>
+        <div class="transit-status" id="transit-status">
+          <span class="status-dot"></span>
+          <span>確認中...</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="card span-12">
+      <div class="card-header">
+        <h2 class="card-title">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+          今日の天気・洗濯指数
+        </h2>
+        <span class="weather-detail" id="weather-location">現在地を取得中</span>
+      </div>
+      <div class="weather-body">
+        <div class="weather-main">
+          <div class="weather-icon-wrap" id="weather-icon">
+            <svg viewBox="0 0 24 24"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>
+          </div>
+          <div>
+            <div class="weather-temp num" id="weather-temp">--<small>°C</small></div>
+            <div class="weather-detail num" id="weather-detail">取得中...</div>
+          </div>
+        </div>
+        <div class="laundry-box" id="laundry-box">
+          <div class="laundry-label">LAUNDRY INDEX / 洗濯指数</div>
+          <div class="laundry-value" id="laundry-index">算出中...</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =====================================
+         Tier 2: 今日の予定 ＆ タスク
+         ===================================== -->
+    <section class="card span-7">
+      <div class="card-header">
+        <h2 class="card-title">
+          <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg>
+          今日の予定
+        </h2>
+      </div>
+      <ul class="item-list" id="events-list">
+        <li class="empty-msg">読み込み中...</li>
+      </ul>
+    </section>
+
+    <section class="card span-5">
+      <div class="card-header">
+        <h2 class="card-title">
+          <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          今日のタスク
+        </h2>
+      </div>
+      <ul class="item-list" id="tasks-list">
+        <li class="empty-msg">読み込み中...</li>
+      </ul>
+    </section>
+
+    <!-- =====================================
+         Tier 3: 銭湯定休日 ＆ TV・ラジオ番組
+         ===================================== -->
+    <section class="card span-5">
+      <div class="card-header">
+        <h2 class="card-title">
+          <svg viewBox="0 0 24 24"><path d="M8 3v3a2 2 0 0 1-2 2H3"/><path d="M16 3v3a2 2 0 0 0 2 2h3"/><path d="M12 3v5"/><path d="M4 14h16v4a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3v-4Z"/></svg>
+          本日の銭湯定休日
+        </h2>
+      </div>
+      <div id="sento-container">
+        <p class="empty-msg">読み込み中...</p>
+      </div>
+    </section>
+
+    <section class="card span-7">
+      <div class="card-header">
+        <h2 class="card-title">
+          <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="15" rx="2"/><polyline points="17 2 12 7 7 2"/></svg>
+          今日のTV・ラジオ番組
+        </h2>
+      </div>
+      <ul class="item-list" id="media-list">
+        <li class="empty-msg">読み込み中...</li>
+      </ul>
+    </section>
+
+    <!-- =====================================
+         Tier 4: おもなニュース ＆ 今日は何の日
+         ===================================== -->
+    <section class="card span-7">
+      <div class="card-header">
+        <h2 class="card-title">
+          <svg viewBox="0 0 24 24"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8V6Z"/></svg>
+          おもなニュース
+        </h2>
+      </div>
+      <ul class="news-list" id="news-list">
+        <li class="empty-msg">読み込み中...</li>
+      </ul>
+    </section>
+
+    <section class="card span-5">
+      <div class="card-header">
+        <h2 class="card-title">
+          <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+          今日は何の日
+        </h2>
+      </div>
+      <div class="anniversary-tags" id="anniversary-tags">
+        <span class="empty-msg">読み込み中...</span>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+  /* =========================================================
+     1. 設定定数（ここをご自身の環境に合わせて書き換えてください）
+     ========================================================= */
+  const CONFIG = {
+    // GASのWebアプリURL（末尾に ?token=合言葉 を付与）
+    GAS_URL: "https://script.google.com/macros/s/デプロイID/exec?token=合言葉",
+    // localStorageの保存キー
+    GAS_CACHE_KEY: "morning_briefing_gas_v1",
+    WEATHER_CACHE_KEY: "morning_briefing_weather_v1",
+    TODO_CHECKED_KEY: "morning_briefing_todo_checked_v1",
+    // 位置情報取得失敗時のフォールバック座標（大阪市）
+    FALLBACK_COORDS: { lat: 34.6937, lon: 135.5023 }
+  };
+
+  /* =========================================================
+     2. 初期化・イベント登録
+     ========================================================= */
+  document.addEventListener("DOMContentLoaded", () => {
+    renderHeaderDate();
+    registerServiceWorker();
+    initDashboard();
+
+    document.getElementById("refresh-btn").addEventListener("click", () => {
+      initDashboard(true);
+    });
+
+    // ToDoチェック状態の切り替え＆ローカル保持
+    document.getElementById("tasks-list").addEventListener("click", (e) => {
+      const li = e.target.closest(".todo-item");
+      if (!li) return;
+      const cb = li.querySelector("input[type='checkbox']");
+      if (e.target !== cb) cb.checked = !cb.checked;
+      li.classList.toggle("completed", cb.checked);
+      saveTodoCheckState(li.dataset.taskId, cb.checked);
+    });
+  });
+
+  function renderHeaderDate() {
+    const now = new Date();
+    const days = ["日曜日", "月曜日", "火曜日", "水曜日", "木曜日", "金曜日", "土曜日"];
+    const dateEl = document.getElementById("current-date");
+    dateEl.innerHTML = `${now.getMonth() + 1}月${now.getDate()}日<span>${days[now.getDay()]}</span>`;
+  }
+
+  function registerServiceWorker() {
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("./sw.js").catch(err => {
+        console.warn("Service Worker registration skipped:", err);
+      });
+    }
+  }
+
+  /* =========================================================
+     3. ダッシュボード全体制御（キャッシュ即時表示 ＋ 裏側更新）
+     ========================================================= */
+  async function initDashboard(forceRefresh = false) {
+    const refreshBtn = document.getElementById("refresh-btn");
+    refreshBtn.disabled = true;
+
+    // 天気・洗濯指数とGASデータを並列で処理
+    await Promise.all([
+      loadWeatherSection(forceRefresh),
+      loadGasSection()
+    ]);
+
+    refreshBtn.disabled = false;
+  }
+
+  /* =========================================================
+     4. GASデータ取得・キャッシュ・描画処理
+     ========================================================= */
+  async function loadGasSection() {
+    const statusEl = document.getElementById("sync-status");
+    const staleBanner = document.getElementById("stale-banner");
+    const now = new Date();
+
+    // 1. localStorageから前回のキャッシュを即座に復元
+    const cachedRaw = localStorage.getItem(CONFIG.GAS_CACHE_KEY);
+    if (cachedRaw) {
+      try {
+        const cached = JSON.parse(cachedRaw);
+        const isToday = isSameDay(new Date(cached.savedAt), now);
+        renderGasData(cached.data);
+        staleBanner.style.display = isToday ? "none" : "block";
+      } catch (e) {
+        console.warn("GASキャッシュの復元失敗:", e);
+      }
+    }
+
+    // 2. 裏側でGASから最新データを取得（Stale-While-Revalidate）
+    statusEl.textContent = "同期中";
+    statusEl.classList.add("is-loading");
+
+    try {
+      // 未設定時のデモ確認用（URLが初期値のままならサンプルデータを表示）
+      if (CONFIG.GAS_URL.includes("デプロイID")) {
+        const demoData = getDemoGasData();
+        renderGasData(demoData);
+        statusEl.textContent = "デモ表示";
+        staleBanner.style.display = "none";
+        return;
+      }
+
+      const response = await fetch(CONFIG.GAS_URL);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const freshData = await response.json();
+
+      renderGasData(freshData);
+      staleBanner.style.display = "none";
+
+      localStorage.setItem(CONFIG.GAS_CACHE_KEY, JSON.stringify({
+        savedAt: now.toISOString(),
+        data: freshData
+      }));
+
+      const timeStr = now.toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" });
+      statusEl.textContent = `更新 ${timeStr}`;
+    } catch (err) {
+      console.error("GAS取得エラー:", err);
+      statusEl.textContent = cachedRaw ? "キャッシュ表示中" : "取得エラー";
+    } finally {
+      statusEl.classList.remove("is-loading");
+    }
+  }
+
+  /**
+   * GASから返却されたJSONを各カードへ描画
+   * 想定JSON構造:
+   * {
+   *   transit: { route: "路線名", isDelayed: false, statusText: "平常運転（遅れなし）" },
+   *   events: [{ time: "14:00", title: "定例会議" }],
+   *   tasks: [{ id: "1", title: "請求書確認" }],
+   *   sentoClosed: ["〇〇温泉"],
+   *   media: [{ time: "22:00", station: "TBSラジオ", title: "番組名" }],
+   *   news: [{ title: "見出し", url: "https://..." }],
+   *   anniversaries: [{ name: "記念日名", highlight: true }]
+   * }
+   */
+  function renderGasData(data) {
+    if (!data) return;
+
+    // ① 鉄道運行情報
+    const transitCard = document.getElementById("transit-card");
+    const routeNameEl = document.getElementById("transit-route-name");
+    const transitStatusEl = document.getElementById("transit-status");
+    if (data.transit) {
+      routeNameEl.textContent = data.transit.route || "通勤路線 運行状況";
+      const isDelayed = Boolean(data.transit.isDelayed);
+      transitCard.classList.toggle("is-delayed", isDelayed);
+      transitStatusEl.innerHTML = `<span class="status-dot"></span><span>${escapeHtml(data.transit.statusText || "平常運転")}</span>`;
+    }
+
+    // ④ 今日の予定
+    const eventsEl = document.getElementById("events-list");
+    if (data.events && data.events.length > 0) {
+      eventsEl.innerHTML = data.events.map(ev =>
+        `<li><span class="time-badge num">${escapeHtml(ev.time || "終日")}</span><span>${escapeHtml(ev.title)}</span></li>`
+      ).join("");
+    } else {
+      eventsEl.innerHTML = `<li class="empty-msg">本日の予定はありません</li>`;
+    }
+
+    // ⑤ Google ToDoタスク（ローカルのチェック状態も復元）
+    const tasksEl = document.getElementById("tasks-list");
+    const checkedMap = getTodoCheckState();
+    if (data.tasks && data.tasks.length > 0) {
+      tasksEl.innerHTML = data.tasks.map((task, idx) => {
+        const id = String(task.id || idx);
+        const isChecked = Boolean(checkedMap[id]);
+        return `<li class="todo-item ${isChecked ? "completed" : ""}" data-task-id="${escapeHtml(id)}">
+          <input type="checkbox" ${isChecked ? "checked" : ""}>
+          <span>${escapeHtml(task.title)}</span>
+        </li>`;
+      }).join("");
+    } else {
+      tasksEl.innerHTML = `<li class="empty-msg">本日のタスクはありません</li>`;
+    }
+
+    // ⑥ 銭湯定休日
+    const sentoContainer = document.getElementById("sento-container");
+    if (data.sentoClosed && data.sentoClosed.length > 0) {
+      const badges = data.sentoClosed.map(name =>
+        `<span class="sento-badge">${escapeHtml(name)}（本日休業）</span>`
+      ).join("");
+      sentoContainer.innerHTML = `<div class="sento-list">${badges}</div>`;
+    } else {
+      sentoContainer.innerHTML = `<p class="sento-open-msg">登録されている銭湯はすべて営業日です</p>`;
+    }
+
+    // ⑦ TV・ラジオ番組
+    const mediaEl = document.getElementById("media-list");
+    if (data.media && data.media.length > 0) {
+      mediaEl.innerHTML = data.media.map(m =>
+        `<li>
+          <span class="time-badge num">${escapeHtml(m.time)}</span>
+          ${m.station ? `<span class="media-station">${escapeHtml(m.station)}</span>` : ""}
+          <span>${escapeHtml(m.title)}</span>
+        </li>`
+      ).join("");
+    } else {
+      mediaEl.innerHTML = `<li class="empty-msg">本日登録されている番組はありません</li>`;
+    }
+
+    // ⑧ おもなニュース
+    const newsEl = document.getElementById("news-list");
+    if (data.news && data.news.length > 0) {
+      newsEl.innerHTML = data.news.slice(0, 6).map(item =>
+        `<li><a href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(item.title)}</a></li>`
+      ).join("");
+    } else {
+      newsEl.innerHTML = `<li class="empty-msg">ニュースを取得できませんでした</li>`;
+    }
+
+    // ⑨ 今日は何の日
+    const anniEl = document.getElementById("anniversary-tags");
+    if (data.anniversaries && data.anniversaries.length > 0) {
+      anniEl.innerHTML = data.anniversaries.map(a => {
+        const label = typeof a === "string" ? a : a.name;
+        const isHighlight = typeof a === "object" && a.highlight;
+        return `<span class="tag ${isHighlight ? "highlight" : ""}">${escapeHtml(label)}</span>`;
+      }).join("");
+    } else {
+      anniEl.innerHTML = `<span class="empty-msg">記念日データなし</span>`;
+    }
+  }
+
+  /* =========================================================
+     5. 現在地取得 ＋ Open-Meteo 天気＆洗濯指数算出
+     ========================================================= */
+  async function loadWeatherSection(forceRefresh = false) {
+    // 1. 直近の天気キャッシュ（1時間以内）があれば即座に表示
+    const cachedRaw = localStorage.getItem(CONFIG.WEATHER_CACHE_KEY);
+    if (cachedRaw) {
+      try {
+        const cached = JSON.parse(cachedRaw);
+        renderWeatherUI(cached.data);
+        const ageMinutes = (Date.now() - new Date(cached.savedAt).getTime()) / 60000;
+        if (!forceRefresh && ageMinutes < 60 && isSameDay(new Date(cached.savedAt), new Date())) {
+          return; // 1時間以内の当日キャッシュなら再取得をスキップ
         }
+      } catch (e) {
+        console.warn("天気キャッシュ復元失敗:", e);
+      }
+    }
 
-        // --- Custom Message Box ---
-        function showMessage(title, message, isConfirm = false, onConfirm = null) {
-            UI.modalTitle.textContent = title;
-            UI.modalBody.textContent = message;
-            UI.modalActions.innerHTML = ''; // Clear previous buttons
+    // 2. Geolocation APIから現在地を取得
+    const coords = await getCurrentCoordinates();
+    const cityName = await fetchCityName(coords.lat, coords.lon);
 
-            if (isConfirm) {
-                const cancelBtn = document.createElement('button');
-                cancelBtn.textContent = 'キャンセル';
-                cancelBtn.className = 'bg-gray-200 hover:bg-gray-300 text-gray-800 px-5 py-2 rounded-lg font-medium transition-colors';
-                cancelBtn.onclick = () => hideMessage();
+    // 3. Open-Meteo APIで天気を取得
+    const apiUrl = new URL("https://api.open-meteo.com/v1/forecast");
+    apiUrl.searchParams.set("latitude", coords.lat);
+    apiUrl.searchParams.set("longitude", coords.lon);
+    apiUrl.searchParams.set("current", "temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m");
+    apiUrl.searchParams.set("daily", "temperature_2m_max,temperature_2m_min,precipitation_probability_max");
+    apiUrl.searchParams.set("timezone", "Asia/Tokyo");
+    apiUrl.searchParams.set("forecast_days", "1");
 
-                const confirmBtn = document.createElement('button');
-                confirmBtn.textContent = '実行';
-                confirmBtn.className = 'bg-red-500 hover:bg-red-600 text-white px-5 py-2 rounded-lg font-medium transition-colors';
-                confirmBtn.onclick = () => {
-                    hideMessage();
-                    if (onConfirm) onConfirm();
-                };
+    try {
+      const res = await fetch(apiUrl.toString());
+      if (!res.ok) throw new Error(`Weather HTTP ${res.status}`);
+      const data = await res.json();
 
-                UI.modalActions.appendChild(cancelBtn);
-                UI.modalActions.appendChild(confirmBtn);
-            } else {
-                const okBtn = document.createElement('button');
-                okBtn.textContent = 'OK';
-                okBtn.className = 'bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg font-medium transition-colors';
-                okBtn.onclick = () => hideMessage();
-                UI.modalActions.appendChild(okBtn);
-            }
+      const weatherPayload = {
+        cityName,
+        temp: Math.round(data.current.temperature_2m),
+        humidity: data.current.relative_humidity_2m,
+        windSpeed: data.current.wind_speed_10m,
+        weatherCode: data.current.weather_code,
+        maxTemp: Math.round(data.daily.temperature_2m_max[0]),
+        minTemp: Math.round(data.daily.temperature_2m_min[0]),
+        precipProb: data.daily.precipitation_probability_max[0]
+      };
 
-            UI.modal.classList.remove('hidden');
-            setTimeout(() => {
-                UI.modal.classList.remove('bg-opacity-0');
-                UI.modalContent.classList.remove('scale-95');
-                UI.modalContent.classList.add('scale-100');
-            }, 10);
-        }
+      renderWeatherUI(weatherPayload);
 
-        function hideMessage() {
-            UI.modalContent.classList.remove('scale-100');
-            UI.modalContent.classList.add('scale-95');
-            setTimeout(() => {
-                UI.modal.classList.add('hidden');
-            }, 200);
-        }
+      localStorage.setItem(CONFIG.WEATHER_CACHE_KEY, JSON.stringify({
+        savedAt: new Date().toISOString(),
+        data: weatherPayload
+      }));
+    } catch (err) {
+      console.error("天気取得エラー:", err);
+      document.getElementById("weather-detail").textContent = "天気データの取得に失敗しました";
+    }
+  }
 
-        // --- Utilities ---
-        function formatBytes(bytes, decimals = 2) {
-            if (bytes === 0) return '0 Bytes';
-            const k = 1024;
-            const dm = decimals < 0 ? 0 : decimals;
-            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
-        }
+  function renderWeatherUI(w) {
+    document.getElementById("weather-location").textContent = w.cityName;
+    document.getElementById("weather-temp").innerHTML = `${w.temp}<small>°C</small>`;
+    document.getElementById("weather-detail").textContent =
+      `最高 ${w.maxTemp}°C / 最低 ${w.minTemp}°C ・ 降水確率 ${w.precipProb}% ・ 湿度 ${w.humidity}%`;
+    document.getElementById("weather-icon").innerHTML = getWeatherSvg(w.weatherCode);
 
-        // Generate a random ID for internal tracking
-        function generateId() {
-            return Math.random().toString(36).substr(2, 9);
-        }
+    const laundry = calculateLaundryIndex({
+      weatherCode: w.weatherCode,
+      precipProb: w.precipProb,
+      temp: w.maxTemp,
+      humidity: w.humidity,
+      windSpeed: w.windSpeed
+    });
 
-        // Hamming distance for dHash comparison
-        function hammingDistance(hash1, hash2) {
-            let distance = 0;
-            for (let i = 0; i < hash1.length; i++) {
-                if (hash1[i] !== hash2[i]) {
-                    distance++;
-                }
-            }
-            return distance;
-        }
+    const laundryEl = document.getElementById("laundry-index");
+    const laundryBox = document.getElementById("laundry-box");
+    laundryEl.textContent = laundry.label;
 
-        // Create a lightweight thumbnail dataURL from an Image object
-        function generateThumbnail(img) {
-            const canvas = document.createElement('canvas');
-            const MAX_SIZE = 250;
-            let width = img.width;
-            let height = img.height;
-            
-            if (width > height) {
-                if (width > MAX_SIZE) {
-                    height *= MAX_SIZE / width;
-                    width = MAX_SIZE;
-                }
-            } else {
-                if (height > MAX_SIZE) {
-                    width *= MAX_SIZE / height;
-                    height = MAX_SIZE;
-                }
-            }
-            
-            canvas.width = width;
-            canvas.height = height;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0, width, height);
-            return canvas.toDataURL('image/jpeg', 0.6); // 60% quality for small thumb
-        }
+    laundryBox.style.background = laundry.isGood ? "var(--accent-green-soft)" : "var(--accent-pink-soft)";
+    laundryBox.style.borderColor = laundry.isGood ? "var(--accent-green-border)" : "var(--accent-pink-border)";
+    laundryBox.querySelector(".laundry-label").style.color = laundry.isGood ? "var(--accent-green)" : "var(--accent-pink)";
+  }
 
-        // Compute Difference Hash (dHash) - 64 bit string
-        function computeDHash(img) {
-            const canvas = document.createElement('canvas');
-            // dHash uses 9x8 grid to compare adjacent pixels (8 comparisons per row = 64 bits)
-            canvas.width = 9;
-            canvas.height = 8;
-            const ctx = canvas.getContext('2d', { willReadFrequently: true });
-            
-            // Draw image scaled down to 9x8
-            ctx.drawImage(img, 0, 0, 9, 8);
-            const imageData = ctx.getImageData(0, 0, 9, 8).data;
-            
-            let hash = '';
-            
-            for (let y = 0; y < 8; y++) {
-                for (let x = 0; x < 8; x++) {
-                    const leftIdx = (y * 9 + x) * 4;
-                    const rightIdx = (y * 9 + (x + 1)) * 4;
-                    
-                    // Convert to grayscale: 0.299*R + 0.587*G + 0.114*B
-                    const leftGray = 0.299 * imageData[leftIdx] + 0.587 * imageData[leftIdx + 1] + 0.114 * imageData[leftIdx + 2];
-                    const rightGray = 0.299 * imageData[rightIdx] + 0.587 * imageData[rightIdx + 1] + 0.114 * imageData[rightIdx + 2];
-                    
-                    hash += leftGray > rightGray ? '1' : '0';
-                }
-            }
-            return hash;
-        }
+  function getCurrentCoordinates() {
+    return new Promise((resolve) => {
+      if (!("geolocation" in navigator)) {
+        resolve(CONFIG.FALLBACK_COORDS);
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(
+        (pos) => resolve({
+          lat: Number(pos.coords.latitude.toFixed(4)),
+          lon: Number(pos.coords.longitude.toFixed(4))
+        }),
+        () => resolve(CONFIG.FALLBACK_COORDS),
+        { enableHighAccuracy: false, timeout: 8000, maximumAge: 1800000 }
+      );
+    });
+  }
 
-        // Process a single file to extract metadata and hash
-        function processImage(file, fileHandle) {
-            return new Promise((resolve) => {
-                const url = URL.createObjectURL(file);
-                const img = new Image();
-                
-                img.onload = () => {
-                    const width = img.width;
-                    const height = img.height;
-                    const hash = computeDHash(img);
-                    const thumbUrl = generateThumbnail(img);
-                    const id = generateId();
-                    
-                    URL.revokeObjectURL(url); // Free memory
-                    
-                    resolve({
-                        id,
-                        fileHandle,
-                        name: file.name,
-                        size: file.size,
-                        width,
-                        height,
-                        hash,
-                        thumbUrl,
-                        isOriginal: false // Will be determined later
-                    });
-                };
-                
-                img.onerror = () => {
-                    URL.revokeObjectURL(url);
-                    resolve(null); // Not a valid image or corrupted
-                };
-                
-                img.src = url;
-            });
-        }
+  async function fetchCityName(lat, lon) {
+    try {
+      const url = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=ja`;
+      const res = await fetch(url);
+      const data = await res.json();
+      const pref = data.principalSubdivision || "";
+      const city = data.city || data.locality || "";
+      return `${pref} ${city}`.trim() || "現在地";
+    } catch {
+      return "現在地";
+    }
+  }
 
-        // --- Main Logic ---
+  function calculateLaundryIndex({ weatherCode, precipProb, temp, humidity, windSpeed }) {
+    if (weatherCode >= 51 || precipProb >= 50) {
+      return { label: "部屋干し推奨（雨の心配あり）", isGood: false };
+    }
+    if (precipProb >= 30) {
+      return { label: "空模様に注意（急な雨に警戒）", isGood: false };
+    }
+    let score = 0;
+    if (weatherCode <= 1) score += 40;
+    else if (weatherCode <= 3) score += 25;
 
-        // 1. Select Folder and trigger scan
-        UI.btnSelectFolder.addEventListener('click', async () => {
-            if (AppState.isProcessing) return;
-            
-            try {
-                // Request access to read/write a directory
-                AppState.dirHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
-                await startScanning();
-            } catch (error) {
-                if (error.name !== 'AbortError') {
-                    console.error(error);
-                    showMessage('エラー', 'フォルダへのアクセスが拒否されたか、エラーが発生しました。');
-                }
-            }
-        });
+    if (humidity <= 50) score += 30;
+    else if (humidity <= 65) score += 20;
+    else score += 10;
 
-        // 2. Scan Directory and Process Images
-        async function startScanning() {
-            AppState.isProcessing = true;
-            AppState.imagesMap = {};
-            AppState.duplicateGroups = [];
-            
-            // Update UI
-            UI.initialState.classList.add('hidden');
-            UI.resultsArea.classList.add('hidden');
-            UI.noDuplicatesMsg.classList.add('hidden');
-            UI.progressArea.classList.remove('hidden');
-            UI.btnBatchSelect.disabled = true;
-            UI.btnDelete.disabled = true;
-            UI.resultsArea.innerHTML = '';
-            
-            UI.progressDetail.textContent = 'フォルダ内のファイルをリストアップ中...';
-            UI.progressBar.style.width = '0%';
-            
-            const imageHandles = [];
-            const allowedExtensions = /\.(jpe?g|png|webp|gif|bmp)$/i;
+    if (temp >= 20) score += 20;
+    else if (temp >= 12) score += 15;
+    else score += 5;
 
-            // Iterate over all entries in the folder
-            for await (const entry of AppState.dirHandle.values()) {
-                if (entry.kind === 'file' && allowedExtensions.test(entry.name)) {
-                    imageHandles.push(entry);
-                }
-            }
+    if (windSpeed >= 10) score += 10;
 
-            const totalFiles = imageHandles.length;
-            if (totalFiles === 0) {
-                finishScanning(0);
-                return;
-            }
+    if (score >= 75) return { label: "大変よく乾く・外干し日和", isGood: true };
+    if (score >= 55) return { label: "よく乾く・外干しOK", isGood: true };
+    return { label: "やや乾きにくい（厚手は注意）", isGood: true };
+  }
 
-            UI.progressText.textContent = `画像を解析中... (0 / ${totalFiles})`;
-            
-            const processedImages = [];
-            let completed = 0;
+  function getWeatherSvg(code) {
+    if (code <= 1) {
+      return `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>`;
+    }
+    if (code <= 48) {
+      return `<svg viewBox="0 0 24 24"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>`;
+    }
+    return `<svg viewBox="0 0 24 24"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M16 14v6"/><path d="M8 14v6"/><path d="M12 16v6"/></svg>`;
+  }
 
-            // Process files one by one to avoid overwhelming memory/CPU
-            for (const handle of imageHandles) {
-                try {
-                    const file = await handle.getFile();
-                    UI.progressDetail.textContent = `解析中: ${file.name}`;
-                    
-                    const imgData = await processImage(file, handle);
-                    if (imgData) {
-                        processedImages.push(imgData);
-                    }
-                } catch (err) {
-                    console.warn(`Failed to process ${handle.name}`, err);
-                }
-                
-                completed++;
-                UI.progressText.textContent = `画像を解析中... (${completed} / ${totalFiles})`;
-                UI.progressBar.style.width = `${(completed / totalFiles) * 100}%`;
-                
-                // Yield to main thread to keep UI responsive
-                await new Promise(resolve => setTimeout(resolve, 0));
-            }
+  /* =========================================================
+     6. ユーティリティ関数
+     ========================================================= */
+  function isSameDay(d1, d2) {
+    return d1.getFullYear() === d2.getFullYear() &&
+           d1.getMonth() === d2.getMonth() &&
+           d1.getDate() === d2.getDate();
+  }
 
-            // 3. Find Duplicates
-            UI.progressDetail.textContent = '類似画像を比較・グループ化中...';
-            await findDuplicates(processedImages);
-            
-            finishScanning(processedImages.length);
-        }
+  function escapeHtml(str) {
+    if (str == null) return "";
+    return String(str).replace(/[&<>"']/g, m => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+    }[m]));
+  }
 
-        // Group images based on dHash Hamming distance
-        async function findDuplicates(processedImages) {
-            const groups = [];
-            const THRESHOLD = 8; // Max bit differences to consider as duplicate (out of 64)
+  function getTodoCheckState() {
+    try {
+      const raw = JSON.parse(localStorage.getItem(CONFIG.TODO_CHECKED_KEY) || "{}");
+      if (raw.date && isSameDay(new Date(raw.date), new Date())) {
+        return raw.checked || {};
+      }
+    } catch {}
+    return {};
+  }
 
-            for (const img of processedImages) {
-                let foundGroup = false;
-                for (const group of groups) {
-                    // Compare with the first image of the group
-                    const distance = hammingDistance(img.hash, group[0].hash);
-                    if (distance <= THRESHOLD) {
-                        group.push(img);
-                        foundGroup = true;
-                        break;
-                    }
-                }
-                if (!foundGroup) {
-                    groups.push([img]);
-                }
-            }
+  function saveTodoCheckState(taskId, isChecked) {
+    const current = getTodoCheckState();
+    current[taskId] = isChecked;
+    localStorage.setItem(CONFIG.TODO_CHECKED_KEY, JSON.stringify({
+      date: new Date().toISOString(),
+      checked: current
+    }));
+  }
 
-            // Keep only groups with > 1 images
-            const dupGroups = groups.filter(g => g.length > 1);
+  // GAS URL未設定時に画面レイアウトを確認するためのサンプルデータ
+  function getDemoGasData() {
+    return {
+      transit: { route: "大阪メトロ 谷町線", isDelayed: false, statusText: "平常運転（遅れなし）" },
+      events: [
+        { time: "終日", title: "在宅勤務" },
+        { time: "14:00", title: "定例オンラインミーティング" }
+      ],
+      tasks: [
+        { id: "demo1", title: "見積データの最終確認" },
+        { id: "demo2", title: "日用品の買い出し" }
+      ],
+      sentoClosed: ["〇〇温泉"],
+      media: [
+        { time: "22:00", station: "TBSラジオ", title: "武田砂鉄のプレ金ナイト" },
+        { time: "25:00", station: "NHK FM", title: "ラジオ深夜便" }
+      ],
+      news: [
+        { title: "朝の主要ニュースヘッドライン（GAS接続後に自動更新されます）", url: "#" },
+        { title: "経済・社会トピックの最新記事リンクサンプル", url: "#" }
+      ],
+      anniversaries: [
+        { name: "将棋の日", highlight: true },
+        { name: "蓮根の日", highlight: false },
+        { name: "ドラフト記念日", highlight: false }
+      ]
+    };
+  }
+</script>
 
-            // Determine Original (highest res, then file size) and DupFile
-            dupGroups.forEach(group => {
-                group.sort((a, b) => {
-                    const resA = a.width * a.height;
-                    const resB = b.width * b.height;
-                    if (resA !== resB) return resB - resA; // Larger resolution first
-                    return b.size - a.size; // Larger file size first if resolution is equal
-                });
-                
-                group[0].isOriginal = true;
-                for (let i = 1; i < group.length; i++) {
-                    group[i].isOriginal = false;
-                }
-                
-                // Store in AppState map for easy access during deletion
-                group.forEach(img => {
-                    AppState.imagesMap[img.id] = img;
-                });
-            });
-
-            AppState.duplicateGroups = dupGroups;
-        }
-
-        function finishScanning(totalProcessed) {
-            UI.progressArea.classList.add('hidden');
-            AppState.isProcessing = false;
-
-            if (AppState.duplicateGroups.length === 0) {
-                UI.noDuplicatesMsg.classList.remove('hidden');
-            } else {
-                renderResults();
-                UI.resultsArea.classList.remove('hidden');
-                UI.btnBatchSelect.disabled = false;
-                UI.btnDelete.disabled = false;
-            }
-        }
-
-        // --- Render UI ---
-        function renderResults() {
-            UI.resultsArea.innerHTML = '';
-
-            AppState.duplicateGroups.forEach((group, index) => {
-                const groupEl = document.createElement('div');
-                groupEl.className = 'group-container bg-white p-6 rounded-xl shadow-sm border border-gray-200';
-                groupEl.id = `group-${index}`;
-                
-                const groupHeader = document.createElement('div');
-                groupHeader.className = 'flex justify-between items-center border-b border-gray-100 pb-3 mb-4';
-                groupHeader.innerHTML = `<h3 class="text-lg font-semibold text-gray-700">重複グループ ${index + 1} <span class="text-sm font-normal text-gray-400 ml-2">(${group.length}枚)</span></h3>`;
-                groupEl.appendChild(groupHeader);
-
-                const grid = document.createElement('div');
-                grid.className = 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6';
-
-                group.forEach(img => {
-                    const card = document.createElement('div');
-                    card.className = `image-card relative border rounded-lg overflow-hidden transition-all duration-200 hover:shadow-md ${img.isOriginal ? 'border-green-300' : 'border-gray-200'}`;
-                    card.id = `card-${img.id}`;
-                    
-                    const badge = img.isOriginal 
-                        ? `<span class="absolute top-2 right-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded shadow">オリジナル (高画質)</span>`
-                        : `<span class="absolute top-2 right-2 bg-yellow-500 text-white text-xs font-bold px-2 py-1 rounded shadow">DupFile (複製)</span>`;
-
-                    card.innerHTML = `
-                        ${badge}
-                        <div class="h-40 bg-gray-100 flex items-center justify-center overflow-hidden">
-                            <img src="${img.thumbUrl}" alt="thumbnail" class="object-contain w-full h-full">
-                        </div>
-                        <div class="p-3 bg-white">
-                            <p class="text-sm font-medium text-gray-800 truncate mb-1" title="${img.name}">${img.name}</p>
-                            <div class="text-xs text-gray-500 flex justify-between mb-1">
-                                <span>${img.width} × ${img.height} px</span>
-                                <span>${formatBytes(img.size)}</span>
-                            </div>
-                            <label class="flex items-center mt-3 cursor-pointer p-2 hover:bg-gray-50 rounded">
-                                <input type="checkbox" class="delete-checkbox h-5 w-5 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500 cursor-pointer" data-id="${img.id}" data-role="${img.isOriginal ? 'original' : 'dupfile'}">
-                                <span class="ml-2 text-sm font-medium text-gray-700 select-none">削除対象として選択</span>
-                            </label>
-                        </div>
-                    `;
-
-                    // Handle card highlighting when checked
-                    const checkbox = card.querySelector('input');
-                    checkbox.addEventListener('change', (e) => {
-                        if (e.target.checked) {
-                            card.classList.add('marked-delete');
-                        } else {
-                            card.classList.remove('marked-delete');
-                        }
-                        updateDeleteButtonState();
-                    });
-
-                    grid.appendChild(card);
-                });
-
-                groupEl.appendChild(grid);
-                UI.resultsArea.appendChild(groupEl);
-            });
-        }
-
-        // --- Interactions ---
-
-        // Batch Select "DupFiles"
-        UI.btnBatchSelect.addEventListener('click', () => {
-            const checkboxes = document.querySelectorAll('.delete-checkbox');
-            checkboxes.forEach(cb => {
-                const card = document.getElementById(`card-${cb.dataset.id}`);
-                if (cb.dataset.role === 'dupfile') {
-                    cb.checked = true;
-                    card.classList.add('marked-delete');
-                } else {
-                    cb.checked = false;
-                    card.classList.remove('marked-delete');
-                }
-            });
-            updateDeleteButtonState();
-        });
-
-        function updateDeleteButtonState() {
-            const checkedCount = document.querySelectorAll('.delete-checkbox:checked').length;
-            UI.btnDelete.innerHTML = `
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
-                選択した画像を削除 ${checkedCount > 0 ? `(${checkedCount}件)` : ''}
-            `;
-        }
-
-        // Delete Selected
-        UI.btnDelete.addEventListener('click', () => {
-            const checkedBoxes = Array.from(document.querySelectorAll('.delete-checkbox:checked'));
-            if (checkedBoxes.length === 0) {
-                showMessage('通知', '削除する画像が選択されていません。');
-                return;
-            }
-
-            showMessage('確認', `選択した ${checkedBoxes.length} 件のファイルを完全に削除しますか？\n（この操作は元に戻せません）`, true, async () => {
-                
-                UI.btnDelete.disabled = true;
-                let deletedCount = 0;
-                let errorCount = 0;
-
-                for (const cb of checkedBoxes) {
-                    const id = cb.dataset.id;
-                    const imageInfo = AppState.imagesMap[id];
-                    
-                    if (imageInfo) {
-                        try {
-                            // Actually remove file using File System Access API
-                            await AppState.dirHandle.removeEntry(imageInfo.handle.name);
-                            
-                            // Remove element from DOM gracefully
-                            const card = document.getElementById(`card-${id}`);
-                            card.style.opacity = '0';
-                            setTimeout(() => {
-                                card.remove();
-                                // Check if group is empty
-                                cleanUpEmptyGroups();
-                            }, 300);
-                            
-                            deletedCount++;
-                        } catch (err) {
-                            console.error(`Error deleting ${imageInfo.name}:`, err);
-                            errorCount++;
-                        }
-                    }
-                }
-                
-                setTimeout(() => {
-                    let msg = `${deletedCount} 件のファイルを削除しました。`;
-                    if (errorCount > 0) {
-                        msg += `\n${errorCount} 件のファイルの削除に失敗しました（権限不足やファイルが使用中の可能性があります）。`;
-                    }
-                    showMessage('完了', msg);
-                    UI.btnDelete.disabled = false;
-                    updateDeleteButtonState();
-                }, 400);
-            });
-        });
-
-        // Clean up UI if a group has no images left (or only 1 left which means no longer duplicate)
-        function cleanUpEmptyGroups() {
-            const groups = document.querySelectorAll('.group-container');
-            let hasDuplicatesLeft = false;
-
-            groups.forEach(group => {
-                const remainingCards = group.querySelectorAll('.image-card').length;
-                if (remainingCards <= 1) { // If 0 or 1 left, it's not a duplicate group anymore
-                    group.remove();
-                } else {
-                    hasDuplicatesLeft = true;
-                }
-            });
-
-            if (!hasDuplicatesLeft) {
-                UI.resultsArea.classList.add('hidden');
-                UI.noDuplicatesMsg.classList.remove('hidden');
-                UI.btnBatchSelect.disabled = true;
-                UI.btnDelete.disabled = true;
-            }
-        }
-
-    </script>
 </body>
 </html>
