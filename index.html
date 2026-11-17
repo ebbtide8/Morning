@@ -182,7 +182,7 @@
     }
 
     /* =========================================
-       CSS Grid ダッシュボード構造（隙間を詰めて情報量アップ）
+       CSS Grid ダッシュボード構造
        ========================================= */
     .dashboard-grid {
       display: grid;
@@ -246,7 +246,7 @@
     }
 
     /* =========================================
-       Tier 1：鉄道運行情報 ＆ 天気・洗濯指数（スリム化）
+       1. 鉄道運行情報 ＆ 2. 天気・洗濯指数
        ========================================= */
     .transit-card {
       padding: 9px 15px;
@@ -384,7 +384,7 @@
     }
 
     /* =========================================
-       Tier 2：今日の予定 ＆ タスク（行間・余白をコンパクトに）
+       3. 今日のタスク ＆ 4. 今日の予定
        ========================================= */
     .item-list {
       list-style: none;
@@ -458,43 +458,7 @@
     }
 
     /* =========================================
-       Tier 3：銭湯定休日 ＆ TV・ラジオ番組
-       ========================================= */
-    .sento-list {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-    }
-
-    .sento-badge {
-      padding: 4px 11px;
-      border-radius: 999px;
-      font-size: 0.8rem;
-      font-weight: 600;
-      background: var(--accent-pink-soft);
-      color: var(--accent-pink);
-      border: 1px solid var(--accent-pink-border);
-    }
-
-    .sento-open-msg {
-      font-size: 0.82rem;
-      color: var(--accent-green);
-      font-weight: 500;
-      padding: 3px 0;
-    }
-
-    .media-station {
-      font-size: 0.7rem;
-      padding: 1px 6px;
-      border-radius: 4px;
-      background: var(--accent-sky-soft);
-      color: var(--accent-sky);
-      font-weight: 600;
-      white-space: nowrap;
-    }
-
-    /* =========================================
-       Tier 4：おもなニュース ＆ 今日は何の日
+       5. おもなニュース ＆ 6. 今日は何の日
        ========================================= */
     .news-list {
       list-style: none;
@@ -543,6 +507,42 @@
       color: var(--accent-pink);
       border-color: var(--accent-pink-border);
       font-weight: 600;
+    }
+
+    /* =========================================
+       7. 銭湯定休日 ＆ 8. TV・ラジオ番組
+       ========================================= */
+    .sento-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .sento-badge {
+      padding: 4px 11px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      background: var(--accent-pink-soft);
+      color: var(--accent-pink);
+      border: 1px solid var(--accent-pink-border);
+    }
+
+    .sento-open-msg {
+      font-size: 0.82rem;
+      color: var(--accent-green);
+      font-weight: 500;
+      padding: 3px 0;
+    }
+
+    .media-station {
+      font-size: 0.7rem;
+      padding: 1px 6px;
+      border-radius: 4px;
+      background: var(--accent-sky-soft);
+      color: var(--accent-sky);
+      font-weight: 600;
+      white-space: nowrap;
     }
 
     /* =========================================
@@ -674,7 +674,7 @@
 
   <main class="dashboard-grid">
 
-    <!-- Tier 1: 鉄道運行情報 ＆ 天気・洗濯指数 -->
+    <!-- 1. 運行情報 -->
     <section class="card span-12 transit-card" id="transit-card">
       <div class="transit-row">
         <div class="transit-route">
@@ -688,6 +688,7 @@
       </div>
     </section>
 
+    <!-- 2. 今日の天気・洗濯指数 -->
     <section class="card span-12">
       <div class="card-header">
         <h2 class="card-title">
@@ -714,19 +715,7 @@
       </div>
     </section>
 
-    <!-- Tier 2: 今日の予定 ＆ タスク -->
-    <section class="card span-7">
-      <div class="card-header">
-        <h2 class="card-title">
-          <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg>
-          今日の予定
-        </h2>
-      </div>
-      <ul class="item-list" id="events-list">
-        <li class="empty-msg">読み込み中...</li>
-      </ul>
-    </section>
-
+    <!-- 3. 今日のタスク -->
     <section class="card span-5">
       <div class="card-header">
         <h2 class="card-title">
@@ -739,32 +728,20 @@
       </ul>
     </section>
 
-    <!-- Tier 3: 銭湯定休日 ＆ TV・ラジオ番組 -->
-    <section class="card span-5">
-      <div class="card-header">
-        <h2 class="card-title">
-          <svg viewBox="0 0 24 24"><path d="M8 3v3a2 2 0 0 1-2 2H3"/><path d="M16 3v3a2 2 0 0 0 2 2h3"/><path d="M12 3v5"/><path d="M4 14h16v4a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3v-4Z"/></svg>
-          本日の銭湯定休日
-        </h2>
-      </div>
-      <div id="sento-container">
-        <p class="empty-msg">読み込み中...</p>
-      </div>
-    </section>
-
+    <!-- 4. 今日の予定 -->
     <section class="card span-7">
       <div class="card-header">
         <h2 class="card-title">
-          <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="15" rx="2"/><polyline points="17 2 12 7 7 2"/></svg>
-          今日のTV・ラジオ番組
+          <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg>
+          今日の予定
         </h2>
       </div>
-      <ul class="item-list" id="media-list">
+      <ul class="item-list" id="events-list">
         <li class="empty-msg">読み込み中...</li>
       </ul>
     </section>
 
-    <!-- Tier 4: おもなニュース ＆ 今日は何の日 -->
+    <!-- 5. おもなニュース -->
     <section class="card span-7">
       <div class="card-header">
         <h2 class="card-title">
@@ -777,6 +754,7 @@
       </ul>
     </section>
 
+    <!-- 6. 今日は何の日 -->
     <section class="card span-5">
       <div class="card-header">
         <h2 class="card-title">
@@ -787,6 +765,32 @@
       <div class="anniversary-tags" id="anniversary-tags">
         <span class="empty-msg">読み込み中...</span>
       </div>
+    </section>
+
+    <!-- 7. 本日の銭湯定休日 -->
+    <section class="card span-5">
+      <div class="card-header">
+        <h2 class="card-title">
+          <svg viewBox="0 0 24 24"><path d="M8 3v3a2 2 0 0 1-2 2H3"/><path d="M16 3v3a2 2 0 0 0 2 2h3"/><path d="M12 3v5"/><path d="M4 14h16v4a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3v-4Z"/></svg>
+          本日の銭湯定休日
+        </h2>
+      </div>
+      <div id="sento-container">
+        <p class="empty-msg">読み込み中...</p>
+      </div>
+    </section>
+
+    <!-- 8. 今日のTV・ラジオ番組 -->
+    <section class="card span-7">
+      <div class="card-header">
+        <h2 class="card-title">
+          <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="15" rx="2"/><polyline points="17 2 12 7 7 2"/></svg>
+          今日のTV・ラジオ番組
+        </h2>
+      </div>
+      <ul class="item-list" id="media-list">
+        <li class="empty-msg">読み込み中...</li>
+      </ul>
     </section>
 
   </main>
@@ -975,7 +979,7 @@
   function renderGasData(data) {
     if (!data) return;
 
-    // ① 鉄道運行情報
+    // 1. 運行情報
     const transitCard = document.getElementById("transit-card");
     const routeNameEl = document.getElementById("transit-route-name");
     const transitStatusEl = document.getElementById("transit-status");
@@ -986,17 +990,7 @@
       transitStatusEl.innerHTML = `<span class="status-dot"></span><span>${escapeHtml(data.transit.statusText || "平常運転")}</span>`;
     }
 
-    // ④ 今日の予定
-    const eventsEl = document.getElementById("events-list");
-    if (data.events && data.events.length > 0) {
-      eventsEl.innerHTML = data.events.map(ev =>
-        `<li><span class="time-badge num">${escapeHtml(ev.time || "終日")}</span><span>${escapeHtml(ev.title)}</span></li>`
-      ).join("");
-    } else {
-      eventsEl.innerHTML = `<li class="empty-msg">本日の予定はありません</li>`;
-    }
-
-    // ⑤ Google ToDoタスク
+    // 3. 今日のタスク
     const tasksEl = document.getElementById("tasks-list");
     const checkedMap = getTodoCheckState();
     if (data.tasks && data.tasks.length > 0) {
@@ -1012,32 +1006,17 @@
       tasksEl.innerHTML = `<li class="empty-msg">本日のタスクはありません</li>`;
     }
 
-    // ⑥ 銭湯定休日
-    const sentoContainer = document.getElementById("sento-container");
-    if (data.sentoClosed && data.sentoClosed.length > 0) {
-      const badges = data.sentoClosed.map(name =>
-        `<span class="sento-badge">${escapeHtml(name)}</span>`
-      ).join("");
-      sentoContainer.innerHTML = `<div class="sento-list">${badges}</div>`;
-    } else {
-      sentoContainer.innerHTML = `<p class="sento-open-msg">登録されている銭湯はすべて営業日です</p>`;
-    }
-
-    // ⑦ TV・ラジオ番組
-    const mediaEl = document.getElementById("media-list");
-    if (data.media && data.media.length > 0) {
-      mediaEl.innerHTML = data.media.map(m =>
-        `<li>
-          <span class="time-badge num">${escapeHtml(m.time)}</span>
-          ${m.station ? `<span class="media-station">${escapeHtml(m.station)}</span>` : ""}
-          <span>${escapeHtml(m.title)}</span>
-        </li>`
+    // 4. 今日の予定
+    const eventsEl = document.getElementById("events-list");
+    if (data.events && data.events.length > 0) {
+      eventsEl.innerHTML = data.events.map(ev =>
+        `<li><span class="time-badge num">${escapeHtml(ev.time || "終日")}</span><span>${escapeHtml(ev.title)}</span></li>`
       ).join("");
     } else {
-      mediaEl.innerHTML = `<li class="empty-msg">本日登録されている番組はありません</li>`;
+      eventsEl.innerHTML = `<li class="empty-msg">本日の予定はありません</li>`;
     }
 
-    // ⑧ おもなニュース
+    // 5. おもなニュース
     const newsEl = document.getElementById("news-list");
     if (data.news && data.news.length > 0) {
       newsEl.innerHTML = data.news.map(item =>
@@ -1052,7 +1031,7 @@
       newsEl.innerHTML = `<li class="empty-msg">ニュースを取得できませんでした</li>`;
     }
 
-    // ⑨ 今日は何の日
+    // 6. 今日は何の日
     const anniEl = document.getElementById("anniversary-tags");
     if (data.anniversaries && data.anniversaries.length > 0) {
       anniEl.innerHTML = data.anniversaries.map(a => {
@@ -1062,6 +1041,31 @@
       }).join("");
     } else {
       anniEl.innerHTML = `<span class="empty-msg">記念日データなし</span>`;
+    }
+
+    // 7. 本日の銭湯定休日
+    const sentoContainer = document.getElementById("sento-container");
+    if (data.sentoClosed && data.sentoClosed.length > 0) {
+      const badges = data.sentoClosed.map(name =>
+        `<span class="sento-badge">${escapeHtml(name)}</span>`
+      ).join("");
+      sentoContainer.innerHTML = `<div class="sento-list">${badges}</div>`;
+    } else {
+      sentoContainer.innerHTML = `<p class="sento-open-msg">登録されている銭湯はすべて営業日です</p>`;
+    }
+
+    // 8. 今日のTV・ラジオ番組
+    const mediaEl = document.getElementById("media-list");
+    if (data.media && data.media.length > 0) {
+      mediaEl.innerHTML = data.media.map(m =>
+        `<li>
+          <span class="time-badge num">${escapeHtml(m.time)}</span>
+          ${m.station ? `<span class="media-station">${escapeHtml(m.station)}</span>` : ""}
+          <span>${escapeHtml(m.title)}</span>
+        </li>`
+      ).join("");
+    } else {
+      mediaEl.innerHTML = `<li class="empty-msg">本日登録されている番組はありません</li>`;
     }
   }
 
@@ -1294,18 +1298,13 @@
   function getDemoGasData() {
     return {
       transit: { route: "大阪メトロ 谷町線 ・ JR大阪環状線", isDelayed: false, statusText: "すべて平常運転（遅れなし）" },
-      events: [
-        { time: "終日", title: "在宅勤務" },
-        { time: "14:00", title: "定例オンラインミーティング" }
-      ],
       tasks: [
         { id: "demo1", title: "見積データの最終確認" },
         { id: "demo2", title: "日用品の買い出し" }
       ],
-      sentoClosed: ["駒川温泉"],
-      media: [
-        { time: "22:00", station: "TBSラジオ", title: "武田砂鉄のプレ金ナイト" },
-        { time: "25:00", station: "NHK FM", title: "ラジオ深夜便" }
+      events: [
+        { time: "終日", title: "在宅勤務" },
+        { time: "14:00", title: "定例オンラインミーティング" }
       ],
       news: [
         { source: "NHK", title: "右上の歯車アイコンからGASのURLと合言葉を登録すると実データに切り替わります", url: "#" },
@@ -1315,6 +1314,11 @@
         { name: "将棋の日", highlight: true },
         { name: "蓮根の日", highlight: false },
         { name: "ドラフト記念日", highlight: false }
+      ],
+      sentoClosed: ["駒川温泉"],
+      media: [
+        { time: "22:00", station: "TBSラジオ", title: "武田砂鉄のプレ金ナイト" },
+        { time: "25:00", station: "NHK FM", title: "ラジオ深夜便" }
       ]
     };
   }
